@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
 </head>
+
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -32,7 +37,8 @@
             <div class="upload-area" id="uploadArea">
                 <input type="file" id="fileInput" accept="image/*" hidden>
                 <div class="upload-content" id="uploadContent">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -43,7 +49,7 @@
             </div>
 
             <div class="camera-area hidden" id="cameraArea">
-                <video id="videoElement" autoplay playsinline></video>
+                <video id="videoElement" autoplay playsinline muted></video>
                 <canvas id="canvasElement" hidden></canvas>
                 <button id="captureBtn" class="btn secondary-btn">Capture Photo</button>
             </div>
@@ -66,7 +72,7 @@
 
         <!-- Results Section -->
         <section id="resultsSection" class="results-section hidden">
-            
+
             <!-- Prediction Card -->
             <div class="prediction-card glass-card result-card">
                 <div class="card-header">
@@ -107,8 +113,10 @@
                     <h2>Nearby Collection Centers</h2>
                 </div>
                 <div class="centers-content">
-                    <p style="margin-bottom: 1rem; color: #e2e8f0;">Find the nearest specialized facility for this waste type using Google Maps.</p>
-                    <a id="googleMapsBtn" href="#" target="_blank" class="btn primary-btn" style="text-decoration: none; display: block; text-align: center;">Search on Google Maps</a>
+                    <p style="margin-bottom: 1rem; color: #e2e8f0;">Find the nearest specialized facility for this waste
+                        type using Google Maps.</p>
+                    <a id="googleMapsBtn" href="#" target="_blank" class="btn primary-btn"
+                        style="text-decoration: none; display: block; text-align: center;">Search on Google Maps</a>
                 </div>
             </div>
 
@@ -117,4 +125,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
