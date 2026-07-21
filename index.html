@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Load TensorFlow.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0"></script>
 </head>
 
 <body>
@@ -80,10 +80,25 @@
                 </div>
                 <div class="prediction-content">
                     <h3 id="predClass">Plastic Waste</h3>
-                    <div class="confidence-badge">
-                        <span>Confidence: </span><span id="predConf">96.4%</span>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <div class="confidence-badge">
+                            <span>Confidence: </span><span id="predConf">96.4%</span>
+                        </div>
+                        <div class="confidence-badge">
+                            <span>Time: </span><span id="predTime">-</span>
+                        </div>
                     </div>
                 </div>
+                <details class="all-preds-dropdown"
+                    style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <summary
+                        style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; font-weight: 500; outline: none;">
+                        View All Predictions</summary>
+                    <div id="allPredictionsList"
+                        style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                        <!-- JS will populate this -->
+                    </div>
+                </details>
             </div>
 
             <!-- Waste Info Card -->

@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Result fields
     const predClass = document.getElementById('predClass');
     const predConf = document.getElementById('predConf');
+    const predTime = document.getElementById('predTime');
     const infoCategory = document.getElementById('infoCategory');
     const infoRecyclable = document.getElementById('infoRecyclable');
     const infoBin = document.getElementById('infoBin');
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initModel() {
         try {
             console.log("Loading TensorFlow.js model...");
-            model = await tf.loadGraphModel(`./tfjs_model_final/model.json?t=${new Date().getTime()}`);
+            model = await tf.loadGraphModel('./tfjs_model_final/model.json');
             console.log("Model loaded successfully!");
         } catch (e) {
             console.error("Error loading model:", e);
@@ -200,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgTensor = imgTensor.expandDims(0);
 
             // Run inference - graph models may return a NamedTensorMap or a Tensor
+            const t0 = performance.now();
             let outputTensor = model.predict(imgTensor);
 
             // If it's a NamedTensorMap (object), extract the first value
@@ -209,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Get raw probabilities array
             const probData = await outputTensor.data();
+            const t1 = performance.now();
+            const inferenceTimeMs = t1 - t0;
 
             // Cleanup tensors
             imgTensor.dispose();
@@ -240,6 +244,38 @@ document.addEventListener('DOMContentLoaded', () => {
             // Populate UI
             predClass.textContent = titleClassName;
             predConf.textContent = confidence.toFixed(1) + "%";
+            predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
+
+            // Populate all predictions dropdown
+            const allPredictionsList = document.getElementById('allPredictionsList');
+            allPredictionsList.innerHTML = '';
+
+            const preds = Array.from(probData).map((prob, i) => ({
+                className: CLASS_LABELS[i].replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
+                probability: prob * 100
+            })).sort((a, b) => b.probability - a.probability);
+
+            preds.forEach(p => {
+                const item = document.createElement('div');
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.background = 'rgba(255, 255, 255, 0.05)';
+                item.style.padding = '0.5rem';
+                item.style.borderRadius = '0.5rem';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = p.className;
+
+                const probSpan = document.createElement('span');
+                probSpan.textContent = p.probability.toFixed(1) + '%';
+                probSpan.style.color = 'var(--accent-color)';
+                probSpan.style.fontWeight = 'bold';
+
+                item.appendChild(nameSpan);
+                item.appendChild(probSpan);
+                allPredictionsList.appendChild(item);
+            });
 
             infoCategory.textContent = info.Category || "Unknown";
             infoRecyclable.textContent = info.Recyclable || "Unknown";
