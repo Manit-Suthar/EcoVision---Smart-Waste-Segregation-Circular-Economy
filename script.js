@@ -35,9 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Model & Database ---
     const CLASS_LABELS = [
-        'E-waste', 'automobile wastes', 'battery waste',
-        'glass waste', 'light bulbs', 'metal waste',
-        'organic waste', 'paper waste', 'plastic waste'
+        'E-waste',           // Index 0
+        'Non_Waste',         // Index 1 (Background / Non-Waste)
+        'automobile wastes', // Index 2
+        'battery waste',     // Index 3
+        'glass waste',       // Index 4
+        'light bulbs',       // Index 5
+        'metal waste',       // Index 6
+        'organic waste',     // Index 7
+        'paper waste',       // Index 8
+        'plastic waste'      // Index 9
     ];
 
     const WASTE_INFO_DB = {
@@ -54,12 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initModel() {
         try {
-            console.log("Loading TensorFlow.js model...");
-            model = await tf.loadGraphModel('./tfjs_model_final/model.json');
+            console.log("Loading ONNX model...");
+            model = await ort.InferenceSession.create('ecovision_model.onnx', {
+                executionProviders: ['webgl', 'wasm']
+            });
             console.log("Model loaded successfully!");
         } catch (e) {
             console.error("Error loading model:", e);
-            showError("Failed to load AI model. Ensure tfjs_model_final folder is present.");
+            showError("Failed to load AI model. Ensure ecovision_model.onnx file is present.");
         }
     }
 
@@ -194,29 +203,37 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMsg.classList.add('hidden');
 
         try {
-            // Preprocess image outside tidy first
+            // Preprocess image using TF.js
             let imgTensor = tf.browser.fromPixels(imagePreview);
-            imgTensor = tf.image.resizeBilinear(imgTensor, [224, 224]);
-            imgTensor = imgTensor.div(255.0);
-            imgTensor = imgTensor.expandDims(0);
+            
+            // 1. Center crop to square to prevent aspect-ratio squishing
+            const [h, w] = imgTensor.shape;
+            const minDim = Math.min(h, w);
+            const startY = Math.floor((h - minDim) / 2);
+            const startX = Math.floor((w - minDim) / 2);
+            let croppedTensor = tf.slice(imgTensor, [startY, startX, 0], [minDim, minDim, 3]);
+            imgTensor.dispose(); // Cleanup original
+            
+            // 2. Resize the perfect square to 224x224
+            let resizedTensor = tf.image.resizeBilinear(croppedTensor, [224, 224]);
+            croppedTensor.dispose(); // Cleanup crop
+            
+            let finalTensor = resizedTensor.expandDims(0); // [1, 224, 224, 3]
 
-            // Run inference - graph models may return a NamedTensorMap or a Tensor
+            const float32Data = await finalTensor.data();
+            finalTensor.dispose(); // Cleanup final TF tensor
+
+            // Run inference with ONNX Runtime Web
             const t0 = performance.now();
-            let outputTensor = model.predict(imgTensor);
-
-            // If it's a NamedTensorMap (object), extract the first value
-            if (outputTensor && typeof outputTensor === 'object' && !outputTensor.shape) {
-                outputTensor = Object.values(outputTensor)[0];
-            }
-
-            // Get raw probabilities array
-            const probData = await outputTensor.data();
+            const inputName = model.inputNames[0];
+            const inputTensor = new ort.Tensor('float32', float32Data, [1, 224, 224, 3]);
+            const feeds = { [inputName]: inputTensor };
+            
+            const output = await model.run(feeds);
+            const outputName = model.outputNames[0];
+            const probData = output[outputName].data;
             const t1 = performance.now();
             const inferenceTimeMs = t1 - t0;
-
-            // Cleanup tensors
-            imgTensor.dispose();
-            outputTensor.dispose();
 
             console.log("Raw predictions:", Array.from(probData));
 
@@ -241,17 +258,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
             });
 
-            // Populate UI
-            predClass.textContent = titleClassName;
-            predConf.textContent = confidence.toFixed(1) + "%";
-            predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
-
             // Populate all predictions dropdown
             const allPredictionsList = document.getElementById('allPredictionsList');
             allPredictionsList.innerHTML = '';
 
             const preds = Array.from(probData).map((prob, i) => ({
                 className: CLASS_LABELS[i].replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
+                rawClassName: CLASS_LABELS[i],
                 probability: prob * 100
             })).sort((a, b) => b.probability - a.probability);
 
@@ -277,9 +290,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 allPredictionsList.appendChild(item);
             });
 
-            infoCategory.textContent = info.Category || "Unknown";
-            infoRecyclable.textContent = info.Recyclable || "Unknown";
-            infoBin.textContent = info["Dispose In"] || "Unknown Bin";
+            const manualSelection = document.getElementById('manualSelection');
+            const manualCategory = document.getElementById('manualCategory');
+
+            if (predictedClassName === 'Non_Waste') {
+                predClass.textContent = "No waste item detected — please center an object in the camera frame";
+                predConf.textContent = confidence.toFixed(1) + "%";
+                predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
+
+                infoCategory.textContent = "-";
+                infoRecyclable.textContent = "-";
+                infoBin.textContent = "-";
+                
+                manualSelection.classList.add('hidden');
+                setupGoogleMaps("");
+            } else if (confidence < 75.0) {
+                predClass.textContent = `Uncertain (${preds[0].probability.toFixed(0)}% ${preds[0].className}, ${preds[1].probability.toFixed(0)}% ${preds[1].className})`;
+                predConf.textContent = confidence.toFixed(1) + "%";
+                predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
+
+                infoCategory.textContent = "Unknown";
+                infoRecyclable.textContent = "-";
+                infoBin.textContent = "Please categorize manually";
+                
+                manualSelection.classList.remove('hidden');
+                
+                // Clear any previous listeners by cloning
+                const newManualCategory = manualCategory.cloneNode(true);
+                manualCategory.parentNode.replaceChild(newManualCategory, manualCategory);
+                newManualCategory.value = "";
+                
+                newManualCategory.addEventListener('change', (e) => {
+                    const selectedClass = e.target.value;
+                    const selectedInfo = WASTE_INFO_DB[selectedClass] || {};
+                    infoCategory.textContent = selectedInfo.Category || "Unknown";
+                    infoRecyclable.textContent = selectedInfo.Recyclable || "Unknown";
+                    infoBin.textContent = selectedInfo["Dispose In"] || "Unknown Bin";
+                    setupGoogleMaps(selectedInfo.google_query || "waste+disposal+facility");
+                });
+                
+                setupGoogleMaps("waste+disposal+facility");
+            } else {
+                manualSelection.classList.add('hidden');
+                predClass.textContent = titleClassName;
+                predConf.textContent = confidence.toFixed(1) + "%";
+                predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
+
+                infoCategory.textContent = info.Category || "Unknown";
+                infoRecyclable.textContent = info.Recyclable || "Unknown";
+                infoBin.textContent = info["Dispose In"] || "Unknown Bin";
+
+                setupGoogleMaps(info.google_query || "waste+disposal+facility");
+            }
 
             loadingOverlay.classList.add('hidden');
             resultsSection.classList.remove('hidden');

@@ -7,29 +7,27 @@ EcoVision is an intelligent computer vision system designed to classify waste ca
 The application is a fully client-side, serverless single-page application (SPA):
 
 - **Frontend:** Responsive, glassmorphism-styled interface built with vanilla HTML, CSS, and JavaScript.
-- **Machine Learning:** A MobileNetV2 model converted to TensorFlow.js format and quantized to uint8, running locally in the browser with no server round-trips.
+- **Machine Learning:** A MobileNetV2 model exported to ONNX format, running locally in the browser via ONNX Runtime Web, with no server round-trips. TensorFlow.js is utilized for image preprocessing.
 - **Camera Integration:** Live webcam support via the `getUserMedia` API, with automatic fallback to file upload. Prioritizes the rear camera on mobile devices.
 - **Geolocation Services:** Dynamic Google Maps integration that routes users to the nearest appropriate disposal facility based on the AI classification result.
 
 ## Features
 
-- **Offline AI Inference:** The 34MB TensorFlow.js model loads once and runs entirely on-device. No data is sent to any server.
-- **9-Class Waste Classification:** Identifies E-waste, Automobile Waste, Battery Waste, Glass Waste, Light Bulbs, Metal Waste, Organic Waste, Paper Waste, and Plastic Waste.
+- **Offline AI Inference:** The ONNX model loads once and runs entirely on-device. No data is sent to any server.
+- **10-Class Waste Classification:** Identifies E-waste, Automobile Waste, Battery Waste, Glass Waste, Light Bulbs, Metal Waste, Organic Waste, Paper Waste, Plastic Waste, and a Non-Waste background class.
 - **Disposal Intelligence:** Reports waste category (Wet/Dry/Hazardous), recyclability, and the appropriate bin type.
 - **Targeted Location Routing:** Uses the device GPS to generate specific Google Maps queries (e.g., "battery recycling drop-off") rather than generic recycling searches.
 - **Live Camera Capture:** Mobile-ready camera tab for immediate photo capture without leaving the browser.
 
 ## Getting the AI Model
 
-The TensorFlow.js model weight files (`.bin`) exceed GitHub's file size limits and are excluded from version control. To run the application locally you must obtain these files separately.
+The ONNX model weight file (`ecovision_model.onnx`) may exceed GitHub's file size limits and be excluded from version control (check if it exists). To run the application locally you must obtain this file if it is not present in the repository.
 
 **To regenerate the model from scratch:**
 
-1. Open the Kaggle notebook used to train the original MobileNetV2 model.
-2. Download the output file `mobilenetv2_waste_classification.h5`.
-3. Open a fresh Google Colab notebook and run the conversion script (see `model_conversion_guide.md` for the full script).
-4. Download the resulting `tfjs_model_final.zip`.
-5. Unzip it and place the `tfjs_model_final/` folder in the root of this repository.
+1. Open the notebook used to train the original MobileNetV2 model.
+2. Download or export the model to ONNX format (`ecovision_model.onnx`).
+3. Place `ecovision_model.onnx` in the root of this repository.
 
 ## Running Locally
 
@@ -47,10 +45,10 @@ Then open `http://localhost:8000` in your browser.
 waste-segregation/
 ├── index.html              # Main application page
 ├── styles.css              # Full design system and component styles
-├── script.js               # TensorFlow.js inference, camera, and maps logic
-├── tfjs_model_final/       # TensorFlow.js model (model.json + .bin weight shards)
-│   ├── model.json          # Model graph and weight manifest
-│   └── group1-shard*.bin   # Quantized weight files (not committed to Git)
+├── script.js               # ONNX inference, TF.js preprocessing, camera, and maps logic
+├── sw.js                   # Service Worker for PWA
+├── manifest.json           # PWA manifest
+├── ecovision_model.onnx    # ONNX model (not committed to Git if too large)
 └── README.md
 ```
 
@@ -59,6 +57,7 @@ waste-segregation/
 | Class | Category | Recyclable | Bin |
 |---|---|---|---|
 | E-waste | E-Waste | Yes | E-Waste Drop-off |
+| Non_Waste | - | - | - |
 | Automobile Wastes | Automotive Waste | Yes | Hazardous Waste Facility |
 | Battery Waste | Hazardous Waste | Yes | Battery Drop-off |
 | Glass Waste | Dry Waste | Yes | Green/Glass Bin |
