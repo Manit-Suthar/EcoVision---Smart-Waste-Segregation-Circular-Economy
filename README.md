@@ -4,6 +4,7 @@ EcoVision is an intelligent computer vision system designed to classify waste ca
 
 ## System Architecture
 
+
 The application is a fully client-side, serverless single-page application (SPA):
 
 - **Frontend:** Responsive, glassmorphism-styled interface built with vanilla HTML, CSS, and JavaScript.
