@@ -4,11 +4,17 @@ const STATIC_ASSETS = [
     './index.html',
     './styles.css',
     './script.js',
+    './api.js',
     './manifest.json',
     './icon.svg',
     './icon-192.png',
     './icon-512.png',
-    './ecovision_model.onnx',
+    '../shared/ecovision_model.onnx',
+    '../shared/config.json',
+    '../shared/labels.json',
+    '../shared/waste_database.json',
+    '../shared/categories.json',
+    '../shared/bin_colors.json',
     'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js'
 ];
 

@@ -1,69 +1,66 @@
 # EcoVision - Smart Waste Segregation & Circular Economy
 
-EcoVision is an intelligent computer vision system designed to classify waste categories and recommend nearby specialized collection or recycling points. The application runs entirely in the browser — no backend server or API required.
+EcoVision is an intelligent computer vision system designed to classify waste categories and recommend nearby specialized collection or recycling points. 
 
-## System Architecture
+## Offline-First Architecture
 
+The EcoVision platform is built with an **offline-first philosophy**. 
+- **AI Inference** runs entirely on-device via ONNX Runtime Web. Images never leave your device.
+- **Core Functionality** works completely without an internet connection.
+- **Cloud Services** (like analytics and future user rewards) are strictly optional enhancements. If you are offline, analytics events are queued locally and synchronized automatically when connectivity is restored.
 
-The application is a fully client-side, serverless single-page application (SPA):
+## Monorepo Structure
 
-- **Frontend:** Responsive, glassmorphism-styled interface built with vanilla HTML, CSS, and JavaScript.
-- **Machine Learning:** A MobileNetV2 model exported to ONNX format, running locally in the browser via ONNX Runtime Web, with no server round-trips. TensorFlow.js is utilized for image preprocessing.
-- **Camera Integration:** Live webcam support via the `getUserMedia` API, with automatic fallback to file upload. Prioritizes the rear camera on mobile devices.
-- **Geolocation Services:** Dynamic Google Maps integration that routes users to the nearest appropriate disposal facility based on the AI classification result.
+EcoVision is structured as a scalable monorepo to support future mobile applications and backend services without duplicating business logic.
 
-## Features
-
-- **Offline AI Inference:** The ONNX model loads once and runs entirely on-device. No data is sent to any server.
-- **10-Class Waste Classification:** Identifies E-waste, Automobile Waste, Battery Waste, Glass Waste, Light Bulbs, Metal Waste, Organic Waste, Paper Waste, Plastic Waste, and a Non-Waste background class.
-- **Disposal Intelligence:** Reports waste category (Wet/Dry/Hazardous), recyclability, and the appropriate bin type.
-- **Targeted Location Routing:** Uses the device GPS to generate specific Google Maps queries (e.g., "battery recycling drop-off") rather than generic recycling searches.
-- **Live Camera Capture:** Mobile-ready camera tab for immediate photo capture without leaving the browser.
-
-## Getting the AI Model
-
-The ONNX model weight file (`ecovision_model.onnx`) may exceed GitHub's file size limits and be excluded from version control (check if it exists). To run the application locally you must obtain this file if it is not present in the repository.
-
-**To regenerate the model from scratch:**
-
-1. Open the notebook used to train the original MobileNetV2 model.
-2. Download or export the model to ONNX format (`ecovision_model.onnx`).
-3. Place `ecovision_model.onnx` in the root of this repository.
+```text
+EcoVision/
+├── web/                    # The Progressive Web App (PWA)
+│   ├── index.html
+│   ├── script.js           # Core logic and TF.js preprocessing
+│   ├── api.js              # Offline sync queue and API layer
+│   ├── sw.js               # Service Worker for offline caching
+│   ├── ecovision_model.onnx # Local ONNX model
+│   └── ...
+├── shared/                 # Cross-platform knowledge base
+│   ├── labels.json         # AI class labels
+│   └── waste_database.json # Recycling rules and bin mappings
+├── backend/                # Optional Node.js/Express analytics backend
+│   ├── server.js
+│   └── package.json
+└── mobile/                 # Reserved for future Android/iOS app
+```
 
 ## Running Locally
 
-Since the application is entirely static, it only requires a local HTTP server (browsers block local file access for security reasons):
+Because we use a monorepo structure with shared data files, you should serve the application from the root directory.
 
+1. Start a local server in the root of the repository:
 ```bash
 python3 -m http.server 8000
 ```
+2. Open `http://localhost:8000/web/` in your browser.
 
-Then open `http://localhost:8000` in your browser.
+## Backend Development (Optional)
 
-## File Structure
-
+The `backend/` directory contains an Express stub designed for optional analytics. 
+To run the backend:
+```bash
+cd backend
+npm install
+node server.js
 ```
-waste-segregation/
-├── index.html              # Main application page
-├── styles.css              # Full design system and component styles
-├── script.js               # ONNX inference, TF.js preprocessing, camera, and maps logic
-├── sw.js                   # Service Worker for PWA
-├── manifest.json           # PWA manifest
-├── ecovision_model.onnx    # ONNX model (not committed to Git if too large)
-└── README.md
-```
+The backend runs on port 3000 by default and exposes an `/api/analytics` endpoint.
 
 ## Classification Categories
 
-| Class | Category | Recyclable | Bin |
-|---|---|---|---|
-| E-waste | E-Waste | Yes | E-Waste Drop-off |
-| Non_Waste | - | - | - |
-| Automobile Wastes | Automotive Waste | Yes | Hazardous Waste Facility |
-| Battery Waste | Hazardous Waste | Yes | Battery Drop-off |
-| Glass Waste | Dry Waste | Yes | Green/Glass Bin |
-| Light Bulbs | Hazardous Waste | Yes | Special Drop-off |
-| Metal Waste | Dry Waste | Yes | Blue Bin |
-| Organic Waste | Wet Waste | No (Compostable) | Green/Compost Bin |
-| Paper Waste | Dry Waste | Yes | Blue Bin |
-| Plastic Waste | Dry Waste | Yes | Blue Bin |
+We currently detect and categorize the following waste types:
+- E-waste
+- Automobile Wastes
+- Battery Waste
+- Glass Waste
+- Light Bulbs
+- Metal Waste
+- Organic Waste
+- Paper Waste
+- Plastic Waste

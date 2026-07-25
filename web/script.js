@@ -34,35 +34,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let model = null;
 
     // --- Model & Database ---
-    const CLASS_LABELS = [
-        'E-waste',           // Index 0
-        'Non_Waste',         // Index 1 (Background / Non-Waste)
-        'automobile wastes', // Index 2
-        'battery waste',     // Index 3
-        'glass waste',       // Index 4
-        'light bulbs',       // Index 5
-        'metal waste',       // Index 6
-        'organic waste',     // Index 7
-        'paper waste',       // Index 8
-        'plastic waste'      // Index 9
-    ];
+    let CLASS_LABELS = [];
+    let WASTE_INFO_DB = {};
+    let CONFIG = {};
 
-    const WASTE_INFO_DB = {
-        "E-waste": { "Category": "E-Waste", "Recyclable": "Yes", "Dispose In": "E-Waste Drop-off", "google_query": "e-waste+recycling+facility" },
-        "automobile wastes": { "Category": "Automotive Waste", "Recyclable": "Yes", "Dispose In": "Hazardous Waste Facility", "google_query": "automotive+waste+disposal+facility" },
-        "battery waste": { "Category": "Hazardous Waste", "Recyclable": "Yes", "Dispose In": "Battery Drop-off", "google_query": "battery+recycling+drop-off" },
-        "glass waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Green/Glass Bin", "google_query": "glass+recycling+center" },
-        "light bulbs": { "Category": "Hazardous Waste", "Recyclable": "Yes", "Dispose In": "Special Drop-off", "google_query": "light+bulb+recycling" },
-        "metal waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "scrap+metal+recycling" },
-        "organic waste": { "Category": "Wet Waste", "Recyclable": "No (Compostable)", "Dispose In": "Green/Compost Bin", "google_query": "compost+facility" },
-        "paper waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "paper+recycling+center" },
-        "plastic waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "plastic+recycling+center" }
-    };
+    async function initData() {
+        try {
+            const configRes = await fetch('../shared/config.json');
+            CONFIG = await configRes.json();
+            const labelsRes = await fetch('../shared/labels.json');
+            CLASS_LABELS = await labelsRes.json();
+            const dbRes = await fetch('../shared/waste_database.json');
+            WASTE_INFO_DB = await dbRes.json();
+        } catch (e) {
+            console.error("Error loading shared data:", e);
+            showError("Failed to load knowledge base.");
+        }
+    }
+
 
     async function initModel() {
         try {
             console.log("Loading ONNX model...");
-            model = await ort.InferenceSession.create('ecovision_model.onnx', {
+            model = await ort.InferenceSession.create('../shared/ecovision_model.onnx', {
                 executionProviders: ['webgl', 'wasm']
             });
             console.log("Model loaded successfully!");
@@ -72,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Start model loading in background
-    initModel();
+    // Start loading data and model in background
+    initData().then(() => initModel());
 
     // --- Tabs Logic ---
     tabUpload.addEventListener('click', () => {
@@ -214,11 +208,12 @@ document.addEventListener('DOMContentLoaded', () => {
             let croppedTensor = tf.slice(imgTensor, [startY, startX, 0], [minDim, minDim, 3]);
             imgTensor.dispose(); // Cleanup original
             
-            // 2. Resize the perfect square to 224x224
-            let resizedTensor = tf.image.resizeBilinear(croppedTensor, [224, 224]);
+            // 2. Resize the perfect square to input_size
+            const inputSize = CONFIG.input_size || 224;
+            let resizedTensor = tf.image.resizeBilinear(croppedTensor, [inputSize, inputSize]);
             croppedTensor.dispose(); // Cleanup crop
             
-            let finalTensor = resizedTensor.expandDims(0); // [1, 224, 224, 3]
+            let finalTensor = resizedTensor.expandDims(0); // [1, inputSize, inputSize, 3]
 
             const float32Data = await finalTensor.data();
             finalTensor.dispose(); // Cleanup final TF tensor
@@ -226,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Run inference with ONNX Runtime Web
             const t0 = performance.now();
             const inputName = model.inputNames[0];
-            const inputTensor = new ort.Tensor('float32', float32Data, [1, 224, 224, 3]);
+            const inputTensor = new ort.Tensor('float32', float32Data, [1, inputSize, inputSize, 3]);
             const feeds = { [inputName]: inputTensor };
             
             const output = await model.run(feeds);
@@ -292,20 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const manualSelection = document.getElementById('manualSelection');
             const manualCategory = document.getElementById('manualCategory');
+            const threshold = CONFIG.confidence_threshold || 65.0;
 
-            if (predictedClassName === 'Non_Waste') {
-                predClass.textContent = "No waste item detected — please center an object in the camera frame";
-                predConf.textContent = confidence.toFixed(1) + "%";
-                predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
-
-                infoCategory.textContent = "-";
-                infoRecyclable.textContent = "-";
-                infoBin.textContent = "-";
-                
-                manualSelection.classList.add('hidden');
-                setupGoogleMaps("");
-            } else if (confidence < 75.0) {
-                predClass.textContent = `Uncertain (${preds[0].probability.toFixed(0)}% ${preds[0].className}, ${preds[1].probability.toFixed(0)}% ${preds[1].className})`;
+            if (predictedClassName === 'Non_Waste' || confidence < threshold) {
+                if (predictedClassName === 'Non_Waste') {
+                    predClass.textContent = "No waste item detected — please center an object or categorize it manually";
+                } else {
+                    predClass.textContent = "Uncertain about this item — please try another image or categorize it manually";
+                }
                 predConf.textContent = confidence.toFixed(1) + "%";
                 predTime.textContent = inferenceTimeMs.toFixed(1) + " ms";
 
@@ -329,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setupGoogleMaps(selectedInfo.google_query || "waste+disposal+facility");
                 });
                 
-                setupGoogleMaps("waste+disposal+facility");
+                setupGoogleMaps("");
             } else {
                 manualSelection.classList.add('hidden');
                 predClass.textContent = titleClassName;
@@ -341,6 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoBin.textContent = info["Dispose In"] || "Unknown Bin";
 
                 setupGoogleMaps(info.google_query || "waste+disposal+facility");
+            }
+
+            // Log prediction for analytics
+            if (window.api && predictedClassName !== 'Non_Waste') {
+                window.api.logAnalytics(predictedClassName);
             }
 
             loadingOverlay.classList.add('hidden');

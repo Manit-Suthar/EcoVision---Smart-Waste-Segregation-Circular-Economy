@@ -1,0 +1,11 @@
+{
+  "E-waste": { "Category": "E-Waste", "Recyclable": "Yes", "Dispose In": "E-Waste Drop-off", "google_query": "e-waste+recycling+facility" },
+  "automobile wastes": { "Category": "Automotive Waste", "Recyclable": "Yes", "Dispose In": "Hazardous Waste Facility", "google_query": "automotive+waste+disposal+facility" },
+  "battery waste": { "Category": "Hazardous Waste", "Recyclable": "Yes", "Dispose In": "Battery Drop-off", "google_query": "battery+recycling+drop-off" },
+  "glass waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Green/Glass Bin", "google_query": "glass+recycling+center" },
+  "light bulbs": { "Category": "Hazardous Waste", "Recyclable": "Yes", "Dispose In": "Special Drop-off", "google_query": "light+bulb+recycling" },
+  "metal waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "scrap+metal+recycling" },
+  "organic waste": { "Category": "Wet Waste", "Recyclable": "No (Compostable)", "Dispose In": "Green/Compost Bin", "google_query": "compost+facility" },
+  "paper waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "paper+recycling+center" },
+  "plastic waste": { "Category": "Dry Waste", "Recyclable": "Yes", "Dispose In": "Blue Bin", "google_query": "plastic+recycling+center" }
+}
