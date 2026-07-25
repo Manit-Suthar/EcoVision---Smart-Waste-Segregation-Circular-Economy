@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'ai/config_loader.dart';
+import 'ai/inference_engine.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AiConfigLoader.loadAll();
+  await InferenceEngine.initModel();
   runApp(const EcoVisionApp());
 }
 
