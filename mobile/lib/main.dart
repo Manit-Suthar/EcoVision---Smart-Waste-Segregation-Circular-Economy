@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'ai/config_loader.dart';
-import 'ai/inference_engine.dart';
+import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await AiConfigLoader.loadAll();
-  await InferenceEngine.initModel();
-  runApp(const EcoVisionApp());
+  runApp(const MyApp());
 }
 
-class EcoVisionApp extends StatelessWidget {
-  const EcoVisionApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'EcoVision',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      home: const SplashScreen(),
     );
   }
 }

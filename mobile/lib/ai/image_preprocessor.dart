@@ -7,23 +7,25 @@ class ImagePreprocessor {
   /// 2. Center crop to a square
   /// 3. Resize using bilinear interpolation to [inputSize, inputSize]
   /// 4. Extract RGB as a flat Float32List (0.0 to 255.0) in NHWC format
-  static Float32List preprocess(Uint8List imageBytes, int inputSize) {
+  static Float32List preprocess(Uint8List imageBytes, int inputSize, [String? debugPath]) {
     // 1. Decode image
     img.Image? originalImage = img.decodeImage(imageBytes);
     if (originalImage == null) {
       throw Exception('Failed to decode image.');
     }
+    
+    // Bake EXIF orientation so the model sees the image upright
+    originalImage = img.bakeOrientation(originalImage);
 
     // 2. Center crop to a square
     int width = originalImage.width;
     int height = originalImage.height;
     int minDim = width < height ? width : height;
-    
     int startX = (width - minDim) ~/ 2;
     int startY = (height - minDim) ~/ 2;
 
     img.Image croppedImage = img.copyCrop(originalImage, x: startX, y: startY, width: minDim, height: minDim);
-
+    
     // 3. Resize using bilinear interpolation
     img.Image resizedImage = img.copyResize(croppedImage, width: inputSize, height: inputSize, interpolation: img.Interpolation.linear);
 

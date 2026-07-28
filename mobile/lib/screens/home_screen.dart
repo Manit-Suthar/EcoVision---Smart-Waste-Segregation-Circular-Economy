@@ -1,82 +1,51 @@
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import '../ai/config_loader.dart';
-import '../ai/image_preprocessor.dart';
-import '../ai/inference_engine.dart';
-import '../ai/knowledge_engine.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/gamification_service.dart';
+import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  File? _selectedImage;
-  bool _isPredicting = false;
-  
-  String _predClass = '';
-  String _predConf = '';
-  Map<String, dynamic> _wasteInfo = {};
-  
-  final ImagePicker _picker = ImagePicker();
+class HomeScreenState extends State<HomeScreen> {
+  List<Map<String, dynamic>> _history = [];
+  int _greenPoints = 0;
+  double _carbonOffset = 0.0;
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _selectedImage = File(image.path);
-        _predClass = '';
-        _predConf = '';
-        _wasteInfo = {};
-      });
-    }
+  final List<String> _ecoTips = [
+    "Recycling one aluminum can saves enough energy to listen to a full album on your iPod.",
+    "Composting at home can reduce household waste by up to 30%.",
+    "Properly disposing of one car battery prevents lead and acid from contaminating soil.",
+    "E-waste contains valuable metals like gold, silver, and palladium.",
+    "Rinse your plastics! Food residue can ruin an entire batch of recyclables."
+  ];
+  late String _dailyTip;
+
+  @override
+  void initState() {
+    super.initState();
+    _dailyTip = _ecoTips[Random().nextInt(_ecoTips.length)];
+    loadDashboardData();
   }
 
-  Future<void> _runPrediction() async {
-    if (_selectedImage == null) return;
-    
-    setState(() {
-      _isPredicting = true;
-    });
+  Future<void> loadDashboardData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyString = prefs.getString('scan_history');
+    final points = await GamificationService.getPoints();
+    final offset = await GamificationService.getCarbonOffset();
 
-    try {
-      final Uint8List imageBytes = await _selectedImage!.readAsBytes();
-      final int inputSize = AiConfigLoader.config?['input_size'] ?? 224;
-      
-      final Float32List preprocessedData = ImagePreprocessor.preprocess(imageBytes, inputSize);
-      
-      final result = await InferenceEngine.predict(preprocessedData, inputSize);
-      
-      final int maxIdx = result['index'];
-      final double conf = result['confidence'];
-      
-      String predictedLabel = AiConfigLoader.labels?[maxIdx] ?? 'Unknown';
-      
-      final num thresholdNum = AiConfigLoader.config?['confidence_threshold'] ?? 65.0;
-      final double threshold = thresholdNum.toDouble();
-      
-      if (conf < threshold || predictedLabel == 'Non_Waste') {
-        predictedLabel = 'Uncertain / Non Waste';
-      }
-      
-      final info = KnowledgeEngine.getWasteInfo(predictedLabel == 'Uncertain / Non Waste' ? 'Unknown' : predictedLabel);
-
+    if (mounted) {
       setState(() {
-        _predClass = predictedLabel;
-        _predConf = '${conf.toStringAsFixed(1)}%';
-        _wasteInfo = info;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Prediction Failed: $e')),
-      );
-    } finally {
-      setState(() {
-        _isPredicting = false;
+        if (historyString != null) {
+          final List<dynamic> decoded = jsonDecode(historyString);
+          _history = decoded.cast<Map<String, dynamic>>();
+        }
+        _greenPoints = points;
+        _carbonOffset = offset;
       });
     }
   }
@@ -85,54 +54,148 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EcoVision - AI Core Test'),
+        title: const Text('Eco Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_selectedImage != null)
-              Image.file(_selectedImage!, height: 300, fit: BoxFit.cover)
-            else
-              Container(
-                height: 300,
-                color: Colors.grey[300],
-                child: const Center(child: Text('No Image Selected')),
+      body: RefreshIndicator(
+        onRefresh: loadDashboardData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatsRow(),
+              const SizedBox(height: 24),
+              _buildEcoTipCard(),
+              const SizedBox(height: 24),
+              const Text(
+                'Recent Scans',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Select Image from Gallery'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _isPredicting || _selectedImage == null ? null : _runPrediction,
-              child: _isPredicting 
-                  ? const CircularProgressIndicator()
-                  : const Text('Run Prediction'),
-            ),
-            const SizedBox(height: 30),
-            if (_predClass.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Class: $_predClass', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text('Confidence: $_predConf', style: const TextStyle(fontSize: 16)),
-                      const Divider(),
-                      Text('Category: ${_wasteInfo['Category'] ?? '-'}'),
-                      Text('Recyclable: ${_wasteInfo['Recyclable'] ?? '-'}'),
-                      Text('Bin: ${_wasteInfo['Dispose In'] ?? '-'}'),
-                    ],
-                  ),
-                ),
-              )
-          ],
+              const SizedBox(height: 12),
+              _buildHistoryList(),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            title: 'Green Points',
+            value: '$_greenPoints',
+            icon: Icons.star,
+            color: Colors.amber,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildStatCard(
+            title: 'CO₂ Offset',
+            value: '${_carbonOffset.toStringAsFixed(2)} kg',
+            icon: Icons.cloud,
+            color: Colors.lightBlueAccent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({required String title, required String value, required IconData icon, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(title, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEcoTipCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green.shade800, Colors.teal.shade800],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.lightbulb, color: Colors.yellow, size: 30),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Eco Tip of the Day', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                const SizedBox(height: 8),
+                Text(_dailyTip, style: const TextStyle(color: Colors.white70)),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryList() {
+    if (_history.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.history, size: 60, color: Colors.grey[600]),
+              const SizedBox(height: 16),
+              Text('No scans yet', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _history.length,
+      itemBuilder: (context, index) {
+        final item = _history[_history.length - 1 - index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+              child: Icon(Icons.recycling, color: Theme.of(context).colorScheme.primary),
+            ),
+            title: Text(item['class_name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(item['category'] ?? ''),
+            trailing: Text(
+              '${(item['confidence'] as num).toStringAsFixed(1)}%',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+      },
     );
   }
 }

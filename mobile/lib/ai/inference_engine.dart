@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'dart:typed_data';
 import 'package:onnxruntime/onnxruntime.dart';
 
 class InferenceEngine {
@@ -36,7 +37,8 @@ class InferenceEngine {
       [1, inputSize, inputSize, 3],
     );
     
-    final runOptions = OrtRunOptions();
+
+      final runOptions = OrtRunOptions();
     final inputName = session!.inputNames[0];
     
     final inputs = {inputName: inputTensor};
