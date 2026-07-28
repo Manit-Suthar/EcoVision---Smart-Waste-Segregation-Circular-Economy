@@ -44,6 +44,7 @@ self.addEventListener('fetch', (event) => {
             }
             return fetch(event.request).catch((err) => {
                 console.error("Fetch failed (offline?):", err);
+                return new Response("Offline", { status: 503 });
             });
         })
     );

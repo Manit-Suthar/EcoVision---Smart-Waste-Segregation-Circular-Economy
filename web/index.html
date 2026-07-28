@@ -3,14 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EcoVision | Waste Segregation</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#1E293B">
 
     <!-- Load TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0"></script>
@@ -26,153 +26,206 @@
     </div>
 
     <main class="container">
+        <!-- TOP HEADER -->
         <header class="header">
             <h1>EcoVision</h1>
-            <p>Smart Waste Segregation & Circular Economy</p>
+            <p>Smart Waste Segregation</p>
         </header>
 
-        <!-- Upload Section -->
-        <section class="upload-section glass-card" id="uploadSection">
-            <div class="tabs">
-                <button id="tabUpload" class="tab-btn active">Upload File</button>
-                <button id="tabCamera" class="tab-btn">Use Camera</button>
-            </div>
-
-            <div class="upload-area" id="uploadArea">
-                <input type="file" id="fileInput" accept="image/*" hidden>
-                <div class="upload-content" id="uploadContent">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <p>Click or drag image to upload waste</p>
-                </div>
-                <img id="imagePreview" class="image-preview hidden" src="" alt="Preview">
-            </div>
-
-            <div class="camera-area hidden" id="cameraArea">
-                <video id="videoElement" autoplay playsinline muted></video>
-                <canvas id="canvasElement" hidden></canvas>
-                <button id="captureBtn" class="btn secondary-btn">Capture Photo</button>
-            </div>
-
-            <div class="action-buttons">
-                <button id="predictBtn" class="btn primary-btn" disabled>Analyze Waste</button>
-            </div>
-        </section>
-
-        <!-- Loading Section -->
-        <div id="loadingOverlay" class="loading-overlay glass-card hidden">
-            <div class="spinner"></div>
-            <p>Analyzing Waste...</p>
-        </div>
-
-        <!-- Error Message -->
-        <div id="errorMsg" class="error-msg hidden">
-            <p id="errorText">Unsupported Image. Try another image.</p>
-        </div>
-
-        <!-- Results Section -->
-        <section id="resultsSection" class="results-section hidden">
-
-            <!-- Prediction Card -->
-            <div class="prediction-card glass-card result-card">
-                <div class="card-header">
-                    <h2>AI Detection</h2>
-                </div>
-                <div class="prediction-content">
-                    <h3 id="predClass">Plastic Waste</h3>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <div class="confidence-badge">
-                            <span>Confidence: </span><span id="predConf">96.4%</span>
-                        </div>
-                        <div class="confidence-badge">
-                            <span>Time: </span><span id="predTime">-</span>
-                        </div>
-                    </div>
+        <!-- DASHBOARD VIEW -->
+        <section id="viewDashboard" class="view-section hidden">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="glass-card stat-card" style="padding: 1rem;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Points</div>
+                    <div class="stat-value" id="dashboardPoints" style="font-size: 2rem;">0</div>
+                    <p style="font-size: 0.75rem;">Earned</p>
                 </div>
                 
-                <div id="manualSelection" class="hidden" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <label for="manualCategory" style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #fca5a5;">Select Category Manually:</label>
-                    <select id="manualCategory" style="width: 100%; padding: 0.5rem; border-radius: 0.25rem; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--border-color);">
-                        <option value="" disabled selected>Choose a category...</option>
-                        <option value="E-waste">E-waste</option>
-                        <option value="automobile wastes">Automobile Wastes</option>
-                        <option value="battery waste">Battery Waste</option>
-                        <option value="glass waste">Glass Waste</option>
-                        <option value="light bulbs">Light Bulbs</option>
-                        <option value="metal waste">Metal Waste</option>
-                        <option value="organic waste">Organic Waste</option>
-                        <option value="paper waste">Paper Waste</option>
-                        <option value="plastic waste">Plastic Waste</option>
-                    </select>
-                </div>
-                <details class="all-preds-dropdown"
-                    style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <summary
-                        style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; font-weight: 500; outline: none;">
-                        View All Predictions</summary>
-                    <div id="allPredictionsList"
-                        style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
-                        <!-- JS will populate this -->
-                    </div>
-                </details>
-            </div>
-
-            <!-- Waste Info Card -->
-            <div class="info-card glass-card result-card">
-                <div class="card-header">
-                    <h2>Disposal Method</h2>
-                </div>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">Category</span>
-                        <span class="info-value" id="infoCategory">Dry Waste</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Recyclable</span>
-                        <span class="info-value" id="infoRecyclable">Yes</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Dispose In</span>
-                        <span class="info-value" id="infoBin">Blue Bin</span>
-                    </div>
+                <div class="glass-card stat-card" style="padding: 1rem;">
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">CO₂ Saved</div>
+                    <div class="stat-value text-accent" id="dashboardCO2" style="font-size: 2rem;">0.0</div>
+                    <p style="font-size: 0.75rem;">kg Offset</p>
                 </div>
             </div>
 
-            <!-- Nearby Centers Card -->
-            <div class="centers-card glass-card result-card">
-                <div class="card-header">
-                    <h2>Nearby Collection Centers</h2>
-                </div>
-                <div class="centers-content">
-                    <p style="margin-bottom: 1rem; color: #e2e8f0;">Find the nearest specialized facility for this waste
-                        type using Google Maps.</p>
-                    <a id="googleMapsBtn" href="#" target="_blank" class="btn primary-btn"
-                        style="text-decoration: none; display: block; text-align: center;">Search on Google Maps</a>
+            <div class="glass-card">
+                <h2>Scan History</h2>
+                <div id="historyList" class="history-list">
+                    <p style="color: var(--text-secondary);">No scans yet.</p>
                 </div>
             </div>
-
         </section>
+
+        <!-- SCANNER VIEW (Default) -->
+        <section id="viewScan" class="view-section">
+            <div class="upload-section glass-card" id="uploadSection">
+                <div class="tabs">
+                    <button id="tabUpload" class="tab-btn active">Upload File</button>
+                    <button id="tabCamera" class="tab-btn">Use Camera</button>
+                </div>
+
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                    <div class="upload-content" id="uploadContent">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>Click or drag image to upload waste</p>
+                    </div>
+                    <img id="imagePreview" class="image-preview hidden" src="" alt="Preview">
+                </div>
+
+                <div class="camera-area hidden" id="cameraArea">
+                    <video id="videoElement" autoplay playsinline muted></video>
+                    <canvas id="canvasElement" hidden></canvas>
+                    <div class="camera-crop-guide"></div>
+                    <button id="captureBtn" class="btn secondary-btn" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">Capture Photo</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="predictBtn" class="btn primary-btn" disabled>Analyze Waste</button>
+                </div>
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loadingOverlay" class="loading-overlay glass-card hidden">
+                <div class="spinner"></div>
+                <p>Analyzing Waste...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMsg" class="error-msg hidden">
+                <p id="errorText">Unsupported Image. Try another image.</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section hidden">
+
+                <!-- Prediction Card -->
+                <div class="prediction-card glass-card result-card">
+                    <div class="card-header">
+                        <h2>AI Detection</h2>
+                    </div>
+                    <div class="prediction-content">
+                        <h3 id="predClass">Plastic Waste</h3>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <div class="confidence-badge">
+                                <span>Confidence: </span><span id="predConf">96.4%</span>
+                            </div>
+                            <div class="confidence-badge">
+                                <span>Time: </span><span id="predTime">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Confirmation Block -->
+                    <div class="confirmation-block" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <label for="manualCategory" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Confirm Category to Earn Points:</label>
+                        <select id="manualCategory" class="styled-select">
+                            <option value="Non_Waste">Not Waste / Uncertain</option>
+                            <option value="automobile wastes">Automobile Wastes</option>
+                            <option value="battery waste">Battery Waste</option>
+                            <option value="glass waste">Glass Waste</option>
+                            <option value="light bulbs">Light Bulbs</option>
+                            <option value="metal waste">Metal Waste</option>
+                            <option value="organic waste">Organic Waste</option>
+                            <option value="paper waste">Paper Waste</option>
+                            <option value="plastic waste">Plastic Waste</option>
+                            <option value="e-waste">E-waste</option>
+                        </select>
+                        <button id="logScanBtn" class="btn primary-btn" style="margin-top: 1rem; width: 100%;">Confirm & Log Scan</button>
+                    </div>
+
+                    <details class="all-preds-dropdown" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <summary style="cursor: pointer; color: var(--accent-color); font-size: 0.9rem; font-weight: 500; outline: none;">View All Predictions</summary>
+                        <div id="allPredictionsList" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                            <!-- JS will populate this -->
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Scrap Value Card -->
+                <div class="info-card glass-card result-card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <h2>Est. Scrap Value</h2>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #10B981; text-align: center;" id="scrapValueText">
+                        $0.00
+                    </div>
+                    <p style="text-align: center; color: var(--text-secondary); font-size: 0.8rem;">Values are estimates only</p>
+                </div>
+
+                <!-- Deep Knowledge Card -->
+                <div class="info-card glass-card result-card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <h2>Handling & Impact</h2>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 1rem;">
+                        <div>
+                            <span style="font-weight: bold; color: #60a5fa;">Dispose In:</span>
+                            <p id="infoBin" style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">-</p>
+                        </div>
+                        <div>
+                            <span style="font-weight: bold; color: #34d399;">Environmental Impact:</span>
+                            <p id="infoImpact" style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">-</p>
+                        </div>
+                        <div>
+                            <span style="font-weight: bold; color: #a78bfa;">Recycling Process:</span>
+                            <p id="infoProcess" style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Card -->
+                <div class="info-card glass-card result-card" style="margin-top: 1rem;">
+                    <div class="card-header">
+                        <h2>Nearby Facilities</h2>
+                    </div>
+                    <div id="mapContainer" style="margin-top: 1rem;">
+                        <!-- Map embedded via JS -->
+                    </div>
+                </div>
+
+                <!-- Report Issue Button -->
+                <button id="reportIssueBtn" class="btn secondary-btn" style="margin-top: 1rem; border-color: #f59e0b; color: #f59e0b;">Report Unmanaged Waste</button>
+
+            </div>
+        </section>
+
+        <!-- LEARN VIEW -->
+        <section id="viewLearn" class="view-section hidden">
+            <div class="glass-card">
+                <h2>Waste Categories</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">Learn how to properly segregate and recycle different types of waste.</p>
+                <div id="learnList" class="learn-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+        
+        <div style="height: 80px;"></div> <!-- Spacer for bottom nav -->
     </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav glass-card">
+        <div class="nav-item" data-target="viewDashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item active" data-target="viewScan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Scan</span>
+        </div>
+        <div class="nav-item" data-target="viewLearn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            <span>Learn</span>
+        </div>
+    </nav>
 
     <script src="api.js"></script>
     <script src="script.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(error => {
-                        console.error('ServiceWorker registration failed: ', error);
-                    });
-            });
-        }
-    </script>
 </body>
-
 </html>

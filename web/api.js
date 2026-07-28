@@ -40,18 +40,9 @@ class ApiClient {
     }
 
     async sendEvent(event) {
-        const response = await fetch(`${API_BASE_URL}/analytics`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(event)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return await response.json();
+        // Mock successful response since there is no backend for this demo
+        console.log("Mock API event sent:", event);
+        return { success: true };
     }
 
     async syncQueue() {
