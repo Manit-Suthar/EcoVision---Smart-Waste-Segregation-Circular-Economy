@@ -1,59 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Top-level View Elements
+    // --- Views ---
     const views = {
         viewDashboard: document.getElementById('viewDashboard'),
         viewScan: document.getElementById('viewScan'),
-        viewLearn: document.getElementById('viewLearn')
+        viewLearn: document.getElementById('viewLearn'),
+        viewSearch: document.getElementById('viewSearch'),
+        viewResult: document.getElementById('viewResult')
     };
     
     // Bottom Nav
     const navItems = document.querySelectorAll('.nav-item');
 
-    // UI Elements (Scan)
+    // UI Elements
+    const splashLoader = document.getElementById('splashLoader');
     const tabUpload = document.getElementById('tabUpload');
     const tabCamera = document.getElementById('tabCamera');
     const uploadArea = document.getElementById('uploadArea');
     const cameraArea = document.getElementById('cameraArea');
-
     const uploadContent = document.getElementById('uploadContent');
     const fileInput = document.getElementById('fileInput');
     const imagePreview = document.getElementById('imagePreview');
     const predictBtn = document.getElementById('predictBtn');
-
     const videoElement = document.getElementById('videoElement');
     const canvasElement = document.getElementById('canvasElement');
     const captureBtn = document.getElementById('captureBtn');
-
     const loadingOverlay = document.getElementById('loadingOverlay');
     const errorMsg = document.getElementById('errorMsg');
     const errorText = document.getElementById('errorText');
-    const resultsSection = document.getElementById('resultsSection');
+    const resultContentArea = document.getElementById('resultContentArea');
+    const backFromResultBtn = document.getElementById('backFromResultBtn');
 
-    // Result fields
-    const predClass = document.getElementById('predClass');
-    const predConf = document.getElementById('predConf');
-    const predTime = document.getElementById('predTime');
-    
-    const infoBin = document.getElementById('infoBin');
-    const infoImpact = document.getElementById('infoImpact');
-    const infoProcess = document.getElementById('infoProcess');
-    
-    const manualCategory = document.getElementById('manualCategory');
-    
-    // Add event listener to update UI when dropdown changes
-    manualCategory.addEventListener('change', () => {
-        updateResultDetails(manualCategory.value);
-    });
-    const logScanBtn = document.getElementById('logScanBtn');
-    const scrapValueText = document.getElementById('scrapValueText');
+    // Search Elements
+    const searchInput = document.getElementById('searchInput');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    const popularItems = document.querySelectorAll('.popular-item');
+    const catPills = document.querySelectorAll('.cat-pill');
 
     let selectedFile = null;
-    let currentDataURL = null; // for training queue
+    let currentDataURL = null; 
     let cameraStream = null;
     let model = null;
-    let lastPredRawClass = null; // store original prediction for feedback
+    let lastPredRawClass = null; 
 
-    // --- Gamification State ---
+    // --- State & Gamification ---
     let greenPoints = parseInt(localStorage.getItem('eco_points')) || 0;
     let carbonOffset = parseFloat(localStorage.getItem('eco_carbon')) || 0.0;
     let scanHistory = JSON.parse(localStorage.getItem('eco_history')) || [];
@@ -64,26 +53,41 @@ document.addEventListener('DOMContentLoaded', () => {
     let WASTE_INFO_DB = {};
     let CONFIG = {};
 
+    window.onload = () => {
+        setTimeout(() => {
+            splashLoader.classList.add('fade-out');
+            setTimeout(() => splashLoader.style.display = 'none', 500);
+        }, 800);
+    };
+
     function updateDashboardUI() {
-        document.getElementById('dashboardPoints').textContent = greenPoints;
-        document.getElementById('dashboardCO2').textContent = carbonOffset.toFixed(2);
+        document.getElementById('dashScans').textContent = scanHistory.length;
+        document.getElementById('dashPoints').textContent = greenPoints;
+        document.getElementById('dashCO2').innerHTML = `${carbonOffset.toFixed(2)}<small>kg</small>`;
+        
+        let scrap = scanHistory.length * 5; // mockup value
+        document.getElementById('dashScrap').textContent = `₹${scrap}`;
         
         const historyList = document.getElementById('historyList');
         if (scanHistory.length === 0) {
-            historyList.innerHTML = '<p style="color: var(--text-secondary);">No scans yet.</p>';
+            historyList.innerHTML = '<p style="color: var(--text-secondary); text-align:center; padding:2rem;">No scans yet. Start recycling!</p>';
         } else {
             historyList.innerHTML = '';
-            scanHistory.slice().reverse().forEach(scan => {
+            scanHistory.slice().reverse().slice(0, 5).forEach(scan => {
                 historyList.innerHTML += `
                     <div class="history-item">
-                        <div>
-                            <strong>${scan.category}</strong>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(scan.date).toLocaleString()}</div>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <div class="icon-circle gray-bg" style="width:40px;height:40px;"><i data-lucide="history" style="width:18px;height:18px;"></i></div>
+                            <div>
+                                <strong style="font-size:0.95rem;">${scan.category}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(scan.date).toLocaleString()}</div>
+                            </div>
                         </div>
-                        <div style="color: var(--accent-color); font-weight: bold;">+10 pts</div>
+                        <div style="color: var(--accent-color); font-weight: bold; font-size:0.9rem;">+10 pts</div>
                     </div>
                 `;
             });
+            lucide.createIcons();
         }
     }
 
@@ -93,9 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(WASTE_INFO_DB).forEach(key => {
             const info = WASTE_INFO_DB[key];
             learnList.innerHTML += `
-                <div class="learn-item">
-                    <h3>${key.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</h3>
-                    <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.5rem;"><strong>Bin:</strong> ${info['Dispose In'] || 'General'}</p>
+                <div class="history-item" style="align-items:flex-start; flex-direction:column; gap:0.5rem;" onclick="showResultScreen('${key}', 'Knowledge Base')">
+                    <h3 style="font-size:1.1rem; color:var(--text-primary); cursor:pointer;">${key.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);"><strong>Bin:</strong> ${info['Dispose In'] || 'General'}</p>
                     <p style="font-size: 0.85rem; color: var(--text-secondary);">${info['Recycling Process'] || ''}</p>
                 </div>
             `;
@@ -115,41 +119,95 @@ document.addEventListener('DOMContentLoaded', () => {
             populateLearnSection();
         } catch (e) {
             console.error("Error loading shared data:", e);
-            showError("Failed to load knowledge base.");
         }
     }
 
     async function initModel() {
         try {
-            console.log("Loading ONNX model...");
-            model = await ort.InferenceSession.create('../shared/ecovision_model.onnx', {
-                executionProviders: ['webgl', 'wasm']
-            });
-            console.log("Model loaded successfully!");
+            model = await ort.InferenceSession.create('../shared/ecovision_model.onnx', { executionProviders: ['webgl', 'wasm'] });
         } catch (e) {
             console.error("Error loading model:", e);
-            showError("Failed to load AI model.");
         }
     }
 
     initData().then(() => initModel());
 
     // --- Navigation Logic ---
+    function switchView(targetId) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const targetNav = document.querySelector(`[data-target="${targetId}"]`);
+        if(targetNav) targetNav.classList.add('active');
+        
+        Object.values(views).forEach(v => v.classList.add('hidden'));
+        if(views[targetId]) views[targetId].classList.remove('hidden');
+        
+        if (targetId === 'viewDashboard') updateDashboardUI();
+        if (targetId !== 'viewScan') stopCamera();
+    }
+
     navItems.forEach(item => {
+        item.addEventListener('click', () => switchView(item.getAttribute('data-target')));
+    });
+
+    backFromResultBtn.addEventListener('click', () => {
+        switchView('viewSearch'); // or history.back() conceptually, but search is safe default
+    });
+
+    // --- Search Logic ---
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query.length < 2) {
+            searchSuggestions.classList.add('hidden');
+            return;
+        }
+
+        const matches = Object.keys(WASTE_INFO_DB).filter(k => k.toLowerCase().includes(query));
+        
+        if (matches.length > 0) {
+            searchSuggestions.innerHTML = matches.slice(0, 5).map(m => `
+                <div class="suggestion-item" data-key="${m}">
+                    <i data-lucide="search" style="width:16px; height:16px; color:var(--text-secondary);"></i>
+                    <span style="font-weight:500;">${m.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</span>
+                </div>
+            `).join('');
+            searchSuggestions.classList.remove('hidden');
+            lucide.createIcons();
+
+            document.querySelectorAll('.suggestion-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const key = item.getAttribute('data-key');
+                    searchInput.value = '';
+                    searchSuggestions.classList.add('hidden');
+                    showResultScreen(key, "Knowledge Base Search");
+                });
+            });
+        } else {
+            searchSuggestions.innerHTML = '<div class="suggestion-item"><span style="color:var(--text-secondary);">No matches found</span></div>';
+            searchSuggestions.classList.remove('hidden');
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if(!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+            searchSuggestions.classList.add('hidden');
+        }
+    });
+
+    popularItems.forEach(item => {
+        item.addEventListener('click', () => showResultScreen(item.getAttribute('data-query'), "Popular Selection"));
+    });
+    catPills.forEach(item => {
         item.addEventListener('click', () => {
-            navItems.forEach(n => n.classList.remove('active'));
-            item.classList.add('active');
-            
-            Object.values(views).forEach(v => v.classList.add('hidden'));
-            const targetId = item.getAttribute('data-target');
-            views[targetId].classList.remove('hidden');
-            
-            if (targetId === 'viewDashboard') updateDashboardUI();
-            if (targetId !== 'viewScan') stopCamera();
+            const cat = item.innerText.trim();
+            // Just map to first matched for demo
+            let key = Object.keys(WASTE_INFO_DB).find(k => k.toLowerCase().includes(cat.toLowerCase()));
+            if(!key) key = "plastic waste"; 
+            showResultScreen(key, "Category Selection");
         });
     });
 
-    // --- Tabs Logic ---
+
+    // --- Camera & Upload Logic ---
     tabUpload.addEventListener('click', () => {
         tabUpload.classList.add('active');
         tabCamera.classList.remove('active');
@@ -166,13 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
         startCamera();
     });
 
-    // --- Upload Handlers ---
     uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); });
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.classList.remove('dragover');
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
     fileInput.addEventListener('change', (e) => {
@@ -180,10 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function handleFile(file) {
-        if (!file.type.startsWith('image/')) {
-            showError("Please upload a valid image file.");
-            return;
-        }
+        if (!file.type.startsWith('image/')) return;
         selectedFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -196,21 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         };
         reader.readAsDataURL(file);
-        resultsSection.classList.add('hidden');
         errorMsg.classList.add('hidden');
-        logScanBtn.disabled = false;
-        logScanBtn.textContent = 'Confirm & Log Scan';
-        logScanBtn.style.background = '';
     }
 
-    // --- Camera Handlers ---
     async function startCamera() {
         try {
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             videoElement.srcObject = cameraStream;
         } catch (err) {
-            console.error("Camera error:", err);
-            showError("Camera access denied or unavailable.");
             tabUpload.click();
         }
     }
@@ -231,31 +276,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         currentDataURL = canvasElement.toDataURL('image/jpeg', 0.9);
         canvasElement.toBlob((blob) => {
-            const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
-            handleFile(file);
+            handleFile(new File([blob], "camera_capture.jpg", { type: "image/jpeg" }));
             tabUpload.click();
         }, 'image/jpeg', 0.9);
     });
 
-    function showError(msg) {
-        errorText.textContent = msg;
-        errorMsg.classList.remove('hidden');
-        loadingOverlay.classList.add('hidden');
-    }
-
-    // --- Offline AI Prediction ---
+    // --- Inference ---
     predictBtn.addEventListener('click', async () => {
-        if (!selectedFile) return;
-        if (!model) { showError("AI Model is still loading or failed to load."); return; }
-
+        if (!selectedFile || !model) return;
         loadingOverlay.classList.remove('hidden');
-        resultsSection.classList.add('hidden');
         errorMsg.classList.add('hidden');
 
         try {
             let imgTensor = tf.browser.fromPixels(imagePreview);
-            
-            // Center crop
             const [h, w] = imgTensor.shape;
             const minDim = Math.min(h, w);
             const startY = Math.floor((h - minDim) / 2);
@@ -263,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let croppedTensor = tf.slice(imgTensor, [startY, startX, 0], [minDim, minDim, 3]);
             imgTensor.dispose(); 
             
-            // Resize
             const inputSize = CONFIG.input_size || 224;
             let resizedTensor = tf.image.resizeBilinear(croppedTensor, [inputSize, inputSize]);
             croppedTensor.dispose(); 
@@ -272,194 +304,155 @@ document.addEventListener('DOMContentLoaded', () => {
             const float32Data = await finalTensor.data();
             finalTensor.dispose(); 
 
-            // Run inference
-            const t0 = performance.now();
             const inputName = model.inputNames[0];
             const inputTensor = new ort.Tensor('float32', float32Data, [1, inputSize, inputSize, 3]);
             const output = await model.run({ [inputName]: inputTensor });
             const probData = output[model.outputNames[0]].data;
-            const inferenceTimeMs = performance.now() - t0;
 
-            // Argmax
             let maxIdx = 0, maxProb = probData[0];
             for (let i = 1; i < probData.length; i++) {
                 if (probData[i] > maxProb) { maxProb = probData[i]; maxIdx = i; }
             }
 
             const rawClassName = CLASS_LABELS[maxIdx];
-            lastPredRawClass = rawClassName; // Store for feedback
-            const confidence = maxProb * 100;
+            lastPredRawClass = rawClassName; 
+            const confidenceStr = "AI Confidence: " + (maxProb * 100).toFixed(1) + '%';
             
-            // Format Title
-            const titleClassName = rawClassName.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-
-            // Populate AI confidence UI
-            predClass.textContent = titleClassName;
-            predConf.textContent = confidence.toFixed(1) + '%';
-            predTime.textContent = inferenceTimeMs.toFixed(0) + 'ms';
-            
-            // Pre-select manual dropdown
-            Array.from(manualCategory.options).forEach(opt => {
-                if(opt.value.toLowerCase() === rawClassName.toLowerCase()) opt.selected = true;
-            });
-            if(manualCategory.selectedIndex === -1) manualCategory.value = 'Non_Waste';
-
-            // Populate all other UI elements based on selected category
-            updateResultDetails(manualCategory.value);
-
-
-
-            // Populate all predictions
-            const allList = document.getElementById('allPredictionsList');
-            allList.innerHTML = '';
-            Array.from(probData).map((prob, i) => ({
-                name: CLASS_LABELS[i].replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
-                prob: prob * 100
-            })).sort((a,b) => b.prob - a.prob).forEach(p => {
-                allList.innerHTML += `<div style="display:flex; justify-content:space-between;">
-                    <span>${p.name}</span><span>${p.prob.toFixed(1)}%</span>
-                </div>`;
-            });
-
             loadingOverlay.classList.add('hidden');
-            resultsSection.classList.remove('hidden');
+            showResultScreen(rawClassName, confidenceStr, currentDataURL);
 
         } catch (e) {
             console.error(e);
-            showError("An error occurred during AI analysis.");
+            errorText.textContent = "Error during AI analysis.";
+            errorMsg.classList.remove('hidden');
+            loadingOverlay.classList.add('hidden');
         }
     });
 
-    function updateResultDetails(categoryName) {
-        if (categoryName === 'Non_Waste') {
-            infoBin.textContent = 'General Waste';
-            infoImpact.textContent = '-';
-            infoProcess.textContent = '-';
-            scrapValueText.textContent = '$0.00';
-            renderMap('garbage');
-            return;
-        }
+    // --- Premium Result Renderer ---
+    window.showResultScreen = function(categoryKey, contextLabel = "Knowledge Base", imageUrl = null) {
+        // Find DB entry
+        const key = Object.keys(WASTE_INFO_DB).find(k => k.toLowerCase() === categoryKey.toLowerCase());
+        const info = key ? WASTE_INFO_DB[key] : {
+            'Dispose In': 'General Bin',
+            'Environmental Impact': 'Unknown',
+            'Recycling Process': 'N/A'
+        };
 
-        // The dropdown values might differ in case (e.g. "e-waste" vs "E-waste")
-        const key = Object.keys(WASTE_INFO_DB).find(k => k.toLowerCase() === categoryName.toLowerCase());
-        const info = key ? WASTE_INFO_DB[key] : {};
-        infoBin.textContent = info['Dispose In'] || 'General Bin';
-        infoImpact.textContent = info['Environmental Impact'] || '-';
-        infoProcess.textContent = info['Recycling Process'] || '-';
+        const title = (key || categoryKey).replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+        const bin = info['Dispose In'];
         
+        let themeClass = 'general';
+        let binIcon = 'trash-2';
+        let binColor = 'var(--text-secondary)';
+
+        if(bin.toLowerCase().includes('green') || bin.toLowerCase().includes('organic')) { themeClass = 'organic'; binIcon = 'leaf'; binColor = 'var(--accent-color)'; }
+        if(bin.toLowerCase().includes('blue') || bin.toLowerCase().includes('recycle')) { themeClass = 'recyclable'; binIcon = 'recycle'; binColor = 'var(--info-color)'; }
+        if(bin.toLowerCase().includes('red') || bin.toLowerCase().includes('hazard')) { themeClass = 'hazardous'; binIcon = 'alert-triangle'; binColor = 'var(--danger-color)'; }
+
+        // Calculate Scrap
         let scrapVal = 'No significant scrap value';
-        const lowerClass = categoryName.toLowerCase();
+        const lowerClass = (key || categoryKey).toLowerCase();
         if(lowerClass === 'metal waste') scrapVal = '₹20 - ₹200/kg';
         if(lowerClass === 'e-waste') scrapVal = '₹150 - ₹500/kg';
         if(lowerClass === 'plastic waste') scrapVal = '₹8 - ₹12/kg';
         if(lowerClass === 'paper waste') scrapVal = '₹10 - ₹15/kg';
         if(lowerClass === 'glass waste') scrapVal = '₹2 - ₹5/kg';
-        if(lowerClass === 'automobile wastes') scrapVal = 'Variable by part';
-        scrapValueText.textContent = scrapVal;
 
-        renderMap(lowerClass);
-    }
-
-    function renderMap(category) {
-        const mapContainer = document.getElementById('mapContainer');
-        if (!mapContainer) return;
-        
+        // Map URL
         let q = "recycling";
-        if (category.includes('e-waste')) q = "e-waste";
-        if (category.includes('plastic')) q = "plastic recycling";
-        if (category.includes('garbage')) q = "dumpster";
-        if (category.includes('metal')) q = "scrap metal yard";
-        if (category.includes('paper')) q = "paper recycling";
+        if (lowerClass.includes('e-waste')) q = "e-waste";
+        if (lowerClass.includes('plastic')) q = "plastic recycling";
+        if (lowerClass.includes('garbage')) q = "dumpster";
+        if (lowerClass.includes('metal')) q = "scrap metal yard";
+        if (lowerClass.includes('paper')) q = "paper recycling";
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q + ' near me')}`;
 
-        const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q + ' Ahmedabad')}`;
-        
-        const hardcodedPlaces = [
-            { name: "Ahmedabad Kabaadi Market", address: "Gheekanta, Ahmedabad", distance: "~2.1 km" },
-            { name: "EcoRecycle Center", address: "Navrangpura, Ahmedabad", distance: "~3.5 km" },
-            { name: "Green Waste Solutions", address: "SG Highway, Ahmedabad", distance: "~5.0 km" }
-        ];
-
-        let cardsHtml = '';
-        hardcodedPlaces.forEach(place => {
-            cardsHtml += `
-                <div style="background: rgba(0,0,0,0.02); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <div>
-                        <h4 style="margin: 0; font-size: 0.95rem; color: var(--accent-color);">${place.name}</h4>
-                        <p style="margin: 0.25rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">${place.address}</p>
+        resultContentArea.innerHTML = `
+            <div class="result-header">
+                ${imageUrl ? `<img src="${imageUrl}" class="result-image">` : `<div class="icon-circle ${themeClass === 'organic'? 'green-bg' : themeClass === 'recyclable'? 'blue-bg' : themeClass==='hazardous'?'red-bg':'gray-bg'}" style="width:80px;height:80px;"><i data-lucide="${binIcon}" style="width:32px;height:32px;"></i></div>`}
+                <div>
+                    <div class="result-title">${title}</div>
+                    <div class="result-category">
+                        <i data-lucide="info" style="width:14px;height:14px;"></i> ${contextLabel}
                     </div>
-                    <div style="font-size: 0.8rem; font-weight: bold; color: var(--text-primary);">
-                        ${place.distance}
-                    </div>
-                </div>
-            `;
-        });
-
-        mapContainer.innerHTML = `
-            <div style="margin-top: 1rem;">
-                ${cardsHtml}
-                <div style="text-align: center; margin-top: 1rem;">
-                    <a href="${googleMapsSearchUrl}" target="_blank" class="btn primary-btn" style="display: inline-block; text-decoration: none; width: auto; padding: 0.5rem 1rem;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        Search on Google Maps
-                    </a>
                 </div>
             </div>
+
+            <!-- Disposal Card -->
+            <div class="premium-card ${themeClass}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                    <div style="font-weight:700; font-size:1.1rem; color:${binColor};">Dispose In</div>
+                    <i data-lucide="${binIcon}" style="color:${binColor};"></i>
+                </div>
+                <h3 style="font-size:1.8rem; margin-bottom: 0.5rem; color:var(--text-primary);">${bin}</h3>
+                <p style="color:var(--text-secondary); font-size:0.9rem;">${info['Environmental Impact']}</p>
+            </div>
+
+            <!-- Gamification & Economics -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
+                <div class="premium-card" style="margin:0; padding:1rem; text-align:center;">
+                    <i data-lucide="coins" style="color:#eab308; margin-bottom:0.5rem;"></i>
+                    <div style="font-weight:800; font-size:1.1rem;">${scrapVal}</div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary);">Est. Scrap Value</div>
+                </div>
+                <div class="premium-card" style="margin:0; padding:1rem; text-align:center;">
+                    <i data-lucide="star" style="color:#8b5cf6; margin-bottom:0.5rem;"></i>
+                    <div style="font-weight:800; font-size:1.1rem;">+10 pts</div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary);">Green Reward</div>
+                </div>
+            </div>
+
+            <!-- Process details -->
+            <div class="premium-card">
+                <h4 style="margin-bottom:0.5rem;"><i data-lucide="recycle" style="width:16px;height:16px; vertical-align:text-bottom;"></i> Recycling Process</h4>
+                <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.5;">${info['Recycling Process']}</p>
+            </div>
+
+            <!-- Facility / Map -->
+            <div class="premium-card" style="text-align:center;">
+                <h4 style="margin-bottom:0.5rem;">Nearby Facilities</h4>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">Find the closest recycling center for ${title.toLowerCase()}.</p>
+                <a href="${mapUrl}" target="_blank" class="btn primary-btn" style="text-decoration:none; display:inline-flex; width:auto; padding: 0.75rem 1.5rem;">
+                    <i data-lucide="map-pin"></i> Open Google Maps
+                </a>
+            </div>
+
+            <!-- Mock Actions -->
+            ${imageUrl ? `
+            <button id="confirmScanBtn" class="btn primary-btn" style="margin-bottom:0.5rem;">
+                <i data-lucide="check-circle"></i> Log Scan & Claim Points
+            </button>
+            ` : ''}
+            
+            <button id="reportBtn" class="btn action-btn" style="color:var(--danger-color); border-color:var(--danger-color);">
+                <i data-lucide="alert-octagon"></i> Report Civic Issue
+            </button>
         `;
-    }
 
-    const reportIssueBtn = document.getElementById('reportIssueBtn');
-    if (reportIssueBtn) {
-        reportIssueBtn.addEventListener('click', () => {
-            alert("Thank you! Your civic complaint has been drafted. A simulated ticket ID will be generated.");
+        lucide.createIcons();
+        switchView('viewResult');
+
+        if(imageUrl) {
+            document.getElementById('confirmScanBtn').addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                btn.innerHTML = '<i data-lucide="check"></i> Logged!';
+                btn.style.background = 'var(--accent-color)';
+                btn.disabled = true;
+                
+                greenPoints += 10;
+                carbonOffset += 0.5;
+                scanHistory.push({ category: title, date: new Date().toISOString() });
+                localStorage.setItem('eco_points', greenPoints);
+                localStorage.setItem('eco_carbon', carbonOffset);
+                localStorage.setItem('eco_history', JSON.stringify(scanHistory));
+                lucide.createIcons();
+            });
+        }
+
+        document.getElementById('reportBtn').addEventListener('click', () => {
+            const ticketId = '#EV-' + Math.floor(1000 + Math.random() * 9000);
+            alert(`Civic complaint filed!\nTicket ID: ${ticketId}\nExpected Resolution: 48 hours\n\nThank you for keeping the city clean!`);
         });
-    }
-
-    // --- Log Scan & Gamification ---
-    logScanBtn.addEventListener('click', () => {
-        if(logScanBtn.disabled) return;
-        
-        const selCat = manualCategory.value;
-        
-        // Feedback Loop Local Storage
-        if(selCat !== lastPredRawClass && selCat !== 'Non_Waste') {
-            feedbackQueue.push({
-                image: currentDataURL.substring(0, 100) + '... (truncated for local demo)', // Don't bloat local storage in demo
-                original: lastPredRawClass,
-                corrected: selCat,
-                time: new Date().toISOString()
-            });
-            if(feedbackQueue.length > 50) feedbackQueue.shift();
-            localStorage.setItem('eco_feedback_queue', JSON.stringify(feedbackQueue));
-        }
-
-        if(selCat !== 'Non_Waste') {
-            greenPoints += 10;
-            let offset = 0.5;
-            if (selCat === 'e-waste') offset = 5.0;
-            if (selCat === 'metal waste') offset = 3.0;
-            if (selCat === 'plastic waste') offset = 1.5;
-            carbonOffset += offset;
-            
-            scanHistory.push({
-                category: selCat.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
-                date: new Date().toISOString()
-            });
-            
-            localStorage.setItem('eco_points', greenPoints);
-            localStorage.setItem('eco_carbon', carbonOffset);
-            localStorage.setItem('eco_history', JSON.stringify(scanHistory));
-            
-            logScanBtn.textContent = 'Logged (+10 Points)';
-            logScanBtn.style.background = '#10b981';
-            logScanBtn.style.color = '#000';
-            logScanBtn.disabled = true;
-            
-            updateDashboardUI();
-        } else {
-            logScanBtn.textContent = 'Marked as Non-Waste';
-            logScanBtn.style.background = '#475569';
-            logScanBtn.disabled = true;
-        }
-    });
-
+    };
 });

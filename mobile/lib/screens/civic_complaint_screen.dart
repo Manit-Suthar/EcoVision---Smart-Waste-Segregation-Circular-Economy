@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../theme/app_theme.dart';
 
 class CivicComplaintScreen extends StatefulWidget {
   final String category;
@@ -52,7 +53,7 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
         setState(() {
           _isSubmitting = false;
           _submitted = true;
-          _ticketId = '#ECO-${Random().nextInt(9000) + 1000}';
+          _ticketId = '#EV-${Random().nextInt(9000) + 1000}';
         });
       }
     }
@@ -70,15 +71,31 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
 
   Widget _buildFormView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Help keep the community clean by reporting unmanaged waste.',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: AppTheme.errorColor),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Help keep the community clean by reporting unmanaged waste. This will generate a municipal ticket.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.errorColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             TextFormField(
@@ -86,8 +103,7 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
               readOnly: true,
               decoration: const InputDecoration(
                 labelText: 'Waste Category',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.category),
+                prefixIcon: Icon(Icons.category_outlined),
               ),
             ),
             const SizedBox(height: 16),
@@ -96,33 +112,30 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
               readOnly: true,
               decoration: const InputDecoration(
                 labelText: 'Location',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.location_on),
+                prefixIcon: Icon(Icons.location_on_outlined),
               ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
-              maxLines: 3,
+              maxLines: 4,
               decoration: const InputDecoration(
                 labelText: 'Description (Optional)',
-                border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
             ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orangeAccent,
-                  foregroundColor: Colors.black,
+                  backgroundColor: AppTheme.errorColor,
                 ),
                 child: _isSubmitting 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                    : const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Submit Report'),
               ),
             ),
           ],
@@ -138,29 +151,47 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, color: Colors.greenAccent, size: 100),
-            const SizedBox(height: 24),
-            const Text(
-              'Report Submitted Successfully!',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Ticket ID: $_ticketId',
-              style: const TextStyle(fontSize: 18, color: Colors.orangeAccent, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Expected Resolution SLA: 48 hours',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_outline, color: AppTheme.primaryColor, size: 80),
             ),
             const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Go back to result screen
-              },
-              child: const Text('Back to Results'),
+            Text(
+              'Report Submitted!',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.displayMedium,
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              child: Text(
+                'Ticket ID: $_ticketId',
+                style: const TextStyle(fontSize: 18, color: AppTheme.warningColor, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Expected Resolution SLA: 48 hours',
+              style: TextStyle(fontSize: 16, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Back to Results'),
+              ),
             ),
           ],
         ),

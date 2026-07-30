@@ -14,6 +14,11 @@ class KnowledgeEngine {
     return _getDefaultInfo();
   }
 
+  static List<String> getAllWasteKeys() {
+    if (AiConfigLoader.wasteDatabase == null) return [];
+    return AiConfigLoader.wasteDatabase!.keys.toList();
+  }
+
   static Map<String, dynamic> _getDefaultInfo() {
     return {
       'Category': 'Unknown',

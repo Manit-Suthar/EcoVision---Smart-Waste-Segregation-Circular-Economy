@@ -12,14 +12,18 @@ import '../services/feedback_service.dart';
 import 'civic_complaint_screen.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/app_theme.dart';
 
 Float32List _isolatePreprocess(Map<String, dynamic> args) {
   return ImagePreprocessor.preprocess(args['bytes'], args['size'], null);
 }
 
 class ResultScreen extends StatefulWidget {
-  final String imagePath;
-  const ResultScreen({super.key, required this.imagePath});
+  final String? imagePath;
+  final String? categoryKey;
+  final bool isSearch;
+  
+  const ResultScreen({super.key, this.imagePath, this.categoryKey, this.isSearch = false});
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -29,20 +33,29 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isPredicting = true;
   String _predClass = '';
   double _predConf = 0.0;
-  List<double> _allProbs = [];
   Map<String, dynamic> _wasteInfo = {};
   String? _errorMessage;
   bool _logged = false;
+  String _selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
-    _runPrediction();
+    if (widget.isSearch && widget.categoryKey != null) {
+      _isPredicting = false;
+      _predClass = widget.categoryKey!;
+      _selectedCategory = widget.categoryKey!;
+      _wasteInfo = KnowledgeEngine.getWasteInfo(_predClass);
+    } else {
+      _runPrediction();
+    }
   }
 
   Future<void> _runPrediction() async {
     try {
-      final File imageFile = File(widget.imagePath);
+      if (widget.imagePath == null) throw Exception("No image provided");
+      
+      final File imageFile = File(widget.imagePath!);
       final Uint8List imageBytes = await imageFile.readAsBytes();
       final int inputSize = AiConfigLoader.config?['input_size'] ?? 224;
       
@@ -57,7 +70,6 @@ class _ResultScreenState extends State<ResultScreen> {
       final double conf = result['confidence'];
       
       String predictedLabel = AiConfigLoader.labels?[maxIdx] ?? 'Unknown';
-      
       final num thresholdNum = AiConfigLoader.config?['confidence_threshold'] ?? 65.0;
       final double threshold = thresholdNum.toDouble();
       
@@ -72,7 +84,6 @@ class _ResultScreenState extends State<ResultScreen> {
           _predClass = predictedLabel;
           _selectedCategory = predictedLabel;
           _predConf = conf;
-          _allProbs = result['all_probabilities'] != null ? List<double>.from(result['all_probabilities']) : [];
           _wasteInfo = info;
           _isPredicting = false;
         });
@@ -87,63 +98,39 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
-  String _selectedCategory = '';
-
   Future<void> _logScan() async {
-    if (_logged) return;
+    if (_logged || widget.isSearch) return;
     
-    // Save to feedback queue if the user changed the category
-    if (_selectedCategory != _predClass) {
-      await FeedbackService.addCorrection(widget.imagePath, _predClass, _selectedCategory);
+    if (_selectedCategory != _predClass && widget.imagePath != null) {
+      await FeedbackService.addCorrection(widget.imagePath!, _predClass, _selectedCategory);
     }
     
-    // Add points & offset only if it's confirmed as a valid waste type (not non_waste)
     if (_selectedCategory != 'Non_Waste' && _selectedCategory != 'Uncertain / Non Waste') {
       await GamificationService.addPoints(10);
       
-      double offset = 0.5; // Base offset
+      double offset = 0.5;
       if (_selectedCategory.toLowerCase() == 'e-waste') offset = 5.0;
       if (_selectedCategory.toLowerCase() == 'metal waste') offset = 3.0;
       if (_selectedCategory.toLowerCase() == 'plastic waste') offset = 1.5;
       
       await GamificationService.addCarbonOffset(offset);
       
-      // Save to history using knowledge engine category if available
       final info = KnowledgeEngine.getWasteInfo(_selectedCategory);
       await _saveToHistory(_selectedCategory, info['Category'] ?? 'Unknown', _predConf);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Scan logged! +10 Green Points'), backgroundColor: Colors.green),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Marked as Non-Waste.'), backgroundColor: Colors.grey),
-        );
-      }
     }
-
-    setState(() {
-      _logged = true;
-    });
+    setState(() { _logged = true; });
   }
 
   Future<void> _saveToHistory(String className, String category, double confidence) async {
     final prefs = await SharedPreferences.getInstance();
     final historyString = prefs.getString('scan_history');
-    List<dynamic> history = [];
-    if (historyString != null) {
-      history = jsonDecode(historyString);
-    }
+    List<dynamic> history = historyString != null ? jsonDecode(historyString) : [];
     history.add({
       'class_name': className,
       'category': category,
       'confidence': confidence,
       'timestamp': DateTime.now().toIso8601String(),
     });
-    // keep last 50
     if (history.length > 50) history.removeAt(0);
     await prefs.setString('scan_history', jsonEncode(history));
   }
@@ -160,32 +147,37 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
-  void _openGoogleMaps() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MapScreen(category: _predClass),
-      ),
-    );
+  Color _getThemeColor(String bin) {
+    if (bin.toLowerCase().contains('green') || bin.toLowerCase().contains('organic')) return AppTheme.primaryColor;
+    if (bin.toLowerCase().contains('blue') || bin.toLowerCase().contains('recycle')) return AppTheme.infoColor;
+    if (bin.toLowerCase().contains('red') || bin.toLowerCase().contains('hazard')) return AppTheme.errorColor;
+    return AppTheme.textSecondary;
+  }
+
+  IconData _getBinIcon(String bin) {
+    if (bin.toLowerCase().contains('green') || bin.toLowerCase().contains('organic')) return Icons.eco;
+    if (bin.toLowerCase().contains('blue') || bin.toLowerCase().contains('recycle')) return Icons.recycling;
+    if (bin.toLowerCase().contains('red') || bin.toLowerCase().contains('hazard')) return Icons.warning_amber_rounded;
+    return Icons.delete_outline;
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isPredicting) {
       return Scaffold(
-        backgroundColor: Colors.black,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(widget.imagePath), height: 200, width: 200, fit: BoxFit.cover),
-              ),
-              const SizedBox(height: 30),
-              const CircularProgressIndicator(color: Colors.greenAccent),
+              if (widget.imagePath != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(File(widget.imagePath!), height: 120, width: 120, fit: BoxFit.cover),
+                ),
+              const SizedBox(height: 32),
+              const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text('Analyzing waste...', style: TextStyle(color: Colors.white70, fontSize: 16)),
+              Text('Analyzing waste...', style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
         ),
@@ -195,329 +187,197 @@ class _ResultScreenState extends State<ResultScreen> {
     if (_errorMessage != null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Error')),
-        body: Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+        body: Center(child: Text(_errorMessage!, style: const TextStyle(color: AppTheme.errorColor))),
       );
     }
 
+    final String title = _predClass.replaceAll('_', ' ');
+    final String bin = _wasteInfo['Dispose In'] ?? 'General Bin';
+    final Color themeColor = _getThemeColor(bin);
+    final IconData binIcon = _getBinIcon(bin);
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Image.file(File(widget.imagePath), fit: BoxFit.cover),
+      appBar: AppBar(
+        title: Text(widget.isSearch ? 'Knowledge Base' : 'Scan Result'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Card
+            Row(
+              children: [
+                if (widget.imagePath != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(File(widget.imagePath!), height: 80, width: 80, fit: BoxFit.cover),
+                  )
+                else
+                  Container(
+                    height: 80,
+                    width: 80,
+                    decoration: BoxDecoration(color: themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+                    child: Icon(binIcon, color: themeColor, size: 40),
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title.toUpperCase(),
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      if (!widget.isSearch)
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_awesome, size: 16, color: AppTheme.infoColor),
+                            const SizedBox(width: 4),
+                            Text('AI Confidence: ${(_predConf * 100).toStringAsFixed(1)}%', style: const TextStyle(color: AppTheme.infoColor, fontWeight: FontWeight.bold)),
+                          ],
+                        )
+                      else
+                        const Row(
+                          children: [
+                            Icon(Icons.menu_book, size: 16, color: AppTheme.textSecondary),
+                            SizedBox(width: 4),
+                            Text('Database Result', style: TextStyle(color: AppTheme.textSecondary)),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            const SizedBox(height: 24),
+
+            // Disposal Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border(top: BorderSide(color: themeColor, width: 4)),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0,4))],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white24),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text('AI PREDICTION', style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 1.5)),
-                        const SizedBox(height: 8),
-                        Text(
-                          _predClass.toUpperCase(),
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildConfidenceRow(),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_allProbs.isNotEmpty) _buildAllPredictionsCard(),
-                  const SizedBox(height: 16),
-                  if (_selectedCategory != 'Uncertain / Non Waste' && _selectedCategory != 'Non_Waste') ...[
-                    _buildIncentivesCard(),
-                    const SizedBox(height: 16),
-                    _buildDisposalCard(),
-                    const SizedBox(height: 16),
-                    _buildKnowledgeCard(),
-                    const SizedBox(height: 24),
-                  ],
-                  _buildConfirmationBlock(),
-                  const SizedBox(height: 16),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => CivicComplaintScreen(category: _predClass)));
-                          },
-                          icon: const Icon(Icons.report_problem, color: Colors.orangeAccent),
-                          label: const Text('Report Issue', style: TextStyle(color: Colors.orangeAccent)),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.orangeAccent),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                        ),
-                      ),
+                      Text('Dispose In', style: TextStyle(fontWeight: FontWeight.bold, color: themeColor, fontSize: 16)),
+                      Icon(binIcon, color: themeColor),
                     ],
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 8),
+                  Text(bin, style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 28)),
+                  const SizedBox(height: 8),
+                  Text(_wasteInfo['Environmental Impact'] ?? '', style: const TextStyle(color: AppTheme.textSecondary)),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 16),
 
-  Widget _buildConfidenceRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text('AI Confidence', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: _predConf > 80 ? Colors.green.withOpacity(0.2) : Colors.orange.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _predConf > 80 ? Colors.green : Colors.orange),
-          ),
-          child: Text(
-            '${_predConf.toStringAsFixed(1)}%',
-            style: TextStyle(
-              color: _predConf > 80 ? Colors.greenAccent : Colors.orangeAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAllPredictionsCard() {
-    final labels = AiConfigLoader.labels ?? [];
-    if (labels.isEmpty || _allProbs.length != labels.length) return const SizedBox.shrink();
-
-    // Map labels to probabilities, filter out tiny ones, and sort
-    final sorted = List.generate(labels.length, (i) => {'label': labels[i], 'prob': _allProbs[i] * 100})
-        .where((e) => (e['prob'] as double) > 0.1) // show > 0.1%
-        .toList()
-        ..sort((a, b) => (b['prob'] as double).compareTo(a['prob'] as double));
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ExpansionTile(
-        title: const Text('View All Predictions', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
-        children: sorted.map((e) {
-          final l = e['label'] as String;
-          final p = e['prob'] as double;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(l.toUpperCase(), style: const TextStyle(fontSize: 14)),
-                Text('${p.toStringAsFixed(1)}%', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildIncentivesCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
+            // Gamification Row
             Row(
               children: [
-                const Icon(Icons.currency_rupee, color: Colors.amber),
-                const SizedBox(width: 8),
-                const Text('Est. Scrap Value:', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    _getScrapValue(_predClass), 
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.amber),
-                    textAlign: TextAlign.right,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(16)),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.monetization_on, color: AppTheme.warningColor),
+                        const SizedBox(height: 8),
+                        Text(_getScrapValue(_predClass), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), textAlign: TextAlign.center),
+                        const Text('Est. Scrap Value', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(16)),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.star, color: Color(0xFF8B5CF6)),
+                        SizedBox(height: 8),
+                        Text('+10 pts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('Green Reward', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDisposalCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Disposal Method', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Divider(),
-            _infoRow('Dispose In', _wasteInfo['Dispose In']),
-            _infoRow('Recyclable', _wasteInfo['Recyclable']),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _openGoogleMaps,
-                icon: const Icon(Icons.map),
-                label: const Text('Find Nearby Centers'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildKnowledgeCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        children: [
-          ExpansionTile(
-            title: const Text('Preparation & Handling', style: TextStyle(fontWeight: FontWeight.bold)),
-            leading: const Icon(Icons.build, color: Colors.blueAccent),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _infoRow('Prep Steps', _wasteInfo['Preparation Steps']),
-                    _infoRow('Warning', _wasteInfo['Disposal Warnings'], color: Colors.redAccent),
-                  ],
-                ),
-              )
-            ],
-          ),
-          ExpansionTile(
-            title: const Text('Impact & Facts', style: TextStyle(fontWeight: FontWeight.bold)),
-            leading: const Icon(Icons.public, color: Colors.greenAccent),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _infoRow('Environmental Impact', _wasteInfo['Environmental Impact']),
-                    _infoRow('Recycling Process', _wasteInfo['Recycling Process']),
-                    _infoRow('Common Mistakes', _wasteInfo['Common Mistakes'], color: Colors.amberAccent),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoRow(String label, dynamic value, {Color? color}) {
-    if (value == null || value.toString().isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: RichText(
-        text: TextSpan(
-          style: const TextStyle(fontSize: 14, color: Colors.white70),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: TextStyle(fontWeight: FontWeight.bold, color: color ?? Colors.white),
-            ),
-            TextSpan(text: value.toString()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildConfirmationBlock() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: Colors.greenAccent, width: 2),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Confirm Category', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text('Help us improve! Please confirm or correct the AI prediction before logging.', style: TextStyle(fontSize: 14, color: Colors.white70)),
-            const SizedBox(height: 16),
+            // Process Card
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white30),
-                borderRadius: BorderRadius.circular(4),
-                color: Colors.black26,
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: _selectedCategory.isEmpty || !AiConfigLoader.labels!.contains(_selectedCategory) ? AiConfigLoader.labels!.first : _selectedCategory,
-                  dropdownColor: Colors.grey.shade900,
-                  items: AiConfigLoader.labels?.map((label) {
-                    return DropdownMenuItem<String>(
-                      value: label,
-                      child: Text(label),
-                    );
-                  }).toList() ?? [],
-                  onChanged: _logged ? null : (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedCategory = value;
-                        _wasteInfo = KnowledgeEngine.getWasteInfo(value == 'Non_Waste' ? 'Unknown' : value);
-                      });
-                    }
-                  },
-                ),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(color: AppTheme.surfaceColor, borderRadius: BorderRadius.circular(16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.recycling, size: 20),
+                      SizedBox(width: 8),
+                      Text('Recycling Process', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(_wasteInfo['Recycling Process'] ?? 'N/A', style: const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+                  const SizedBox(height: 16),
+                  const Text('Common Mistakes', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.warningColor)),
+                  const SizedBox(height: 4),
+                  Text(_wasteInfo['Common Mistakes'] ?? 'None noted.', style: const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
+
+            // Actions
+            if (!widget.isSearch) ...[
+              ElevatedButton.icon(
                 onPressed: _logged ? null : _logScan,
-                icon: Icon(_logged ? Icons.check : Icons.add_circle),
-                label: Text(_logged ? 'Logged Successfully' : 'Confirm & Log Scan'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _logged ? Colors.grey.shade700 : Colors.green.shade700,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
+                icon: Icon(_logged ? Icons.check_circle : Icons.verified),
+                label: Text(_logged ? 'Scan Logged' : 'Log Scan & Claim Points'),
+              ),
+              const SizedBox(height: 12),
+            ],
+            
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => MapScreen(category: _predClass)));
+              },
+              icon: const Icon(Icons.map_outlined),
+              label: const Text('Find Nearby Facilities'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                side: const BorderSide(color: AppTheme.infoColor),
+                foregroundColor: AppTheme.infoColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
+            const SizedBox(height: 12),
+
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => CivicComplaintScreen(category: _predClass)));
+              },
+              icon: const Icon(Icons.warning_amber_rounded),
+              label: const Text('Report Civic Issue'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.errorColor,
+              ),
+            ),
+            const SizedBox(height: 40),
           ],
         ),
       ),

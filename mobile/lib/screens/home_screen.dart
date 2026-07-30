@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/gamification_service.dart';
+import '../theme/app_theme.dart';
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class HomeScreenState extends State<HomeScreen> {
   double _carbonOffset = 0.0;
 
   final List<String> _ecoTips = [
-    "Recycling one aluminum can saves enough energy to listen to a full album on your iPod.",
+    "Recycling one aluminum can saves enough energy to power a TV for three hours.",
     "Composting at home can reduce household waste by up to 30%.",
     "Properly disposing of one car battery prevents lead and acid from contaminating soil.",
     "E-waste contains valuable metals like gold, silver, and palladium.",
@@ -52,106 +53,129 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scrapValue = _history.length * 5; // mockup value
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Eco Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-        elevation: 0,
-      ),
-      body: RefreshIndicator(
-        onRefresh: loadDashboardData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStatsRow(),
-              const SizedBox(height: 24),
-              _buildEcoTipCard(),
-              const SizedBox(height: 24),
-              const Text(
-                'Recent Scans',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              _buildHistoryList(),
-            ],
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: loadDashboardData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                Text(
+                  'Good Morning 🌿',
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Welcome back to EcoVision!',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 24),
+                
+                // Stats Grid
+                GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1.3,
+                  children: [
+                    _buildStatCard('Total Scans', '${_history.length}', Icons.document_scanner_outlined, AppTheme.textSecondary),
+                    _buildStatCard('Carbon Saved', '${_carbonOffset.toStringAsFixed(1)}kg', Icons.eco, AppTheme.primaryColor),
+                    _buildStatCard('Scrap Value', '₹$scrapValue', Icons.monetization_on, AppTheme.warningColor),
+                    _buildStatCard('Green Score', '$_greenPoints', Icons.star, const Color(0xFF8B5CF6)),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+                _buildFactCard(),
+                
+                const SizedBox(height: 32),
+                Text(
+                  'Recent Activity',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 20),
+                ),
+                const SizedBox(height: 16),
+                _buildHistoryList(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStatsRow() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'Green Points',
-            value: '$_greenPoints',
-            icon: Icons.star,
-            color: Colors.amber,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            title: 'CO₂ Offset',
-            value: '${_carbonOffset.toStringAsFixed(2)} kg',
-            icon: Icons.cloud,
-            color: Colors.lightBlueAccent,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({required String title, required String value, required IconData icon, required Color color}) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+          Icon(icon, color: color, size: 28),
+          const Spacer(),
+          Text(value, style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24)),
+          const SizedBox(height: 2),
+          Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary, fontSize: 13)),
         ],
       ),
     );
   }
 
-  Widget _buildEcoTipCard() {
+  Widget _buildFactCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green.shade800, Colors.teal.shade800],
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFCD34D)),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.lightbulb, color: Colors.yellow, size: 30),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Eco Tip of the Day', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-                const SizedBox(height: 8),
-                Text(_dailyTip, style: const TextStyle(color: Colors.white70)),
-              ],
+          Row(
+            children: [
+              const Icon(Icons.lightbulb, color: Color(0xFF92400E), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Did You Know?',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: const Color(0xFF92400E),
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _dailyTip,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: const Color(0xFF92400E),
+              height: 1.5,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -159,16 +183,18 @@ class HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHistoryList() {
     if (_history.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            children: [
-              Icon(Icons.history, size: 60, color: Colors.grey[600]),
-              const SizedBox(height: 16),
-              Text('No scans yet', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
-            ],
-          ),
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Icon(Icons.history, size: 48, color: AppTheme.textSecondary.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(
+              'No scans yet. Start recycling!',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+          ],
         ),
       );
     }
@@ -176,23 +202,49 @@ class HomeScreenState extends State<HomeScreen> {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _history.length,
+      itemCount: min(_history.length, 5), // show last 5 max
       itemBuilder: (context, index) {
         final item = _history[_history.length - 1 - index];
-        return Card(
+        return Container(
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-              child: Icon(Icons.recycling, color: Theme.of(context).colorScheme.primary),
-            ),
-            title: Text(item['class_name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(item['category'] ?? ''),
-            trailing: Text(
-              '${(item['confidence'] as num).toStringAsFixed(1)}%',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
-            ),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.history, color: AppTheme.textSecondary, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item['class_name'] ?? item['category'] ?? 'Unknown',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item['date'] != null ? DateTime.parse(item['date']).toLocal().toString().split('.')[0] : 'Just now',
+                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                '+10 pts',
+                style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
         );
       },

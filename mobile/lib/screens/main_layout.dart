@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'camera_screen.dart';
+import 'search_screen.dart';
 import 'learn_screen.dart';
 
 class MainLayout extends StatefulWidget {
@@ -29,29 +30,41 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
+  Widget _buildBody() {
+    switch (_currentIndex) {
+      case 0:
+        return HomeScreen(key: _homeKey);
+      case 2:
+        return const SearchScreen();
+      case 3:
+        return const LearnScreen();
+      default:
+        return HomeScreen(key: _homeKey);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex == 2 ? 1 : 0,
-        children: [
-          HomeScreen(key: _homeKey),
-          const LearnScreen(),
-        ],
-      ),
+      body: _buildBody(),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex == 2 ? 2 : 0,
+        selectedIndex: _currentIndex,
         onDestinationSelected: _onTabTapped,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.camera_alt_outlined),
-            selectedIcon: Icon(Icons.camera_alt),
+            icon: Icon(Icons.document_scanner_outlined),
+            selectedIcon: Icon(Icons.document_scanner),
             label: 'Scan',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            selectedIcon: Icon(Icons.search),
+            label: 'Search',
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
