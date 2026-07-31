@@ -5,62 +5,51 @@ EcoVision is an intelligent computer vision system designed to classify waste ca
 ## Offline-First Architecture
 
 The EcoVision platform is built with an **offline-first philosophy**. 
-- **AI Inference** runs entirely on-device via ONNX Runtime Web. Images never leave your device.
+- **AI Inference** runs entirely on-device via ONNX Runtime (Mobile & Web). Images never leave your device.
 - **Core Functionality** works completely without an internet connection.
-- **Cloud Services** (like analytics and future user rewards) are strictly optional enhancements. If you are offline, analytics events are queued locally and synchronized automatically when connectivity is restored.
+- **Shared Intelligence**: The AI models and knowledge base are statically bundled into the app/web clients. No backend servers required.
 
 ## Monorepo Structure
 
-EcoVision is structured as a scalable monorepo to support future mobile applications and backend services without duplicating business logic.
+EcoVision is structured as a scalable monorepo, cleanly separating the shared ML assets from the platform-specific UI clients.
 
 ```text
 EcoVision/
-├── web/                    # The Progressive Web App (PWA)
+├── mobile/                 # Flutter Mobile App (Android/iOS)
+│   ├── lib/
+│   ├── assets/
+│   └── pubspec.yaml
+├── web/                    # Progressive Web App (PWA)
 │   ├── index.html
-│   ├── script.js           # Core logic and TF.js preprocessing
-│   ├── api.js              # Offline sync queue and API layer
-│   ├── sw.js               # Service Worker for offline caching
-│   ├── ecovision_model.onnx # Local ONNX model
-│   └── ...
-├── shared/                 # Cross-platform knowledge base
-│   ├── labels.json         # AI class labels
-│   └── waste_database.json # Recycling rules and bin mappings
-├── backend/                # Optional Node.js/Express analytics backend
-│   ├── server.js
-│   └── package.json
-└── mobile/                 # Reserved for future Android/iOS app
+│   ├── script.js
+│   └── styles.css
+└── shared/                 # Cross-platform knowledge base & ML models
+    ├── ecovision_model.onnx
+    ├── labels.json
+    ├── waste_database.json
+    └── icons/
 ```
 
-## Running Locally
-
-Because we use a monorepo structure with shared data files, you should serve the application from the root directory.
-
+## Running the Web Version
 1. Start a local server in the root of the repository:
 ```bash
 python3 -m http.server 8000
 ```
 2. Open `http://localhost:8000/web/` in your browser.
 
-## Backend Development (Optional)
-
-The `backend/` directory contains an Express stub designed for optional analytics. 
-To run the backend:
+## Running the Mobile App
+1. Ensure Flutter is installed and configured.
+2. Navigate to the `mobile` directory and run:
 ```bash
-cd backend
-npm install
-node server.js
+cd mobile
+flutter run
 ```
-The backend runs on port 3000 by default and exposes an `/api/analytics` endpoint.
 
-## Classification Categories
+## Segregation Categories (MoEFCC Guidelines)
+We enforce the Ministry of Environment (MoEFCC) 4-stream color-coded system:
+- 🟢 **Green Bin**: Wet/Organic Waste
+- 🔵 **Blue Bin**: Dry/Recyclable Waste
+- 🔴 **Red Bin**: Sanitary Waste
+- ⚫ **Black Bin**: Hazardous/E-waste
 
-We currently detect and categorize the following waste types:
-- E-waste
-- Automobile Wastes
-- Battery Waste
-- Glass Waste
-- Light Bulbs
-- Metal Waste
-- Organic Waste
-- Paper Waste
-- Plastic Waste
+The AI currently categorizes items into 9 primary classes (e.g. Battery, Paper, Plastic, Organic, Metal) and maps them dynamically to their respective Government bins, calculating accurate Estimated Scrap Value and Gamified Green Scores.

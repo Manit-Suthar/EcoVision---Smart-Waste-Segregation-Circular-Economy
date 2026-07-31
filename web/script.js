@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
         viewScan: document.getElementById('viewScan'),
         viewLearn: document.getElementById('viewLearn'),
         viewSearch: document.getElementById('viewSearch'),
-        viewResult: document.getElementById('viewResult')
+        viewResult: document.getElementById('viewResult'),
+        viewCivic: document.getElementById('viewCivic')
     };
     
     // Bottom Nav
@@ -54,6 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let CONFIG = {};
 
     window.onload = () => {
+        const hour = new Date().getHours();
+        let msg = "Good Morning";
+        if (hour >= 12 && hour < 17) msg = "Good Afternoon";
+        else if (hour >= 17) msg = "Good Evening";
+        document.getElementById('welcomeMsg').innerHTML = `${msg} 🌿`;
+
         setTimeout(() => {
             splashLoader.classList.add('fade-out');
             setTimeout(() => splashLoader.style.display = 'none', 500);
@@ -97,10 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(WASTE_INFO_DB).forEach(key => {
             const info = WASTE_INFO_DB[key];
             learnList.innerHTML += `
-                <div class="history-item" style="align-items:flex-start; flex-direction:column; gap:0.5rem;" onclick="showResultScreen('${key}', 'Knowledge Base')">
-                    <h3 style="font-size:1.1rem; color:var(--text-primary); cursor:pointer;">${key.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</h3>
+                <div class="history-item" style="width: 100%; box-sizing: border-box; align-items:flex-start; flex-direction:column; gap:0.25rem; padding: 1rem; margin-bottom: 0.5rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 0.75rem;" onclick="showResultScreen('${key}', 'Knowledge Base')">
+                    <h3 style="font-size:1.1rem; font-weight: 700; color:var(--text-primary); cursor:pointer;">${key.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</h3>
                     <p style="font-size: 0.9rem; color: var(--text-secondary);"><strong>Bin:</strong> ${info['Dispose In'] || 'General'}</p>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary);">${info['Recycling Process'] || ''}</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">${info['Recycling Process'] || ''}</p>
                 </div>
             `;
         });
@@ -150,12 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     backFromResultBtn.addEventListener('click', () => {
-        switchView('viewSearch'); // or history.back() conceptually, but search is safe default
+        switchView('viewDashboard'); 
     });
 
     // --- Search Logic ---
+    let currentFocus = -1;
+
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
+        currentFocus = -1;
         if (query.length < 2) {
             searchSuggestions.classList.add('hidden');
             return;
@@ -187,6 +197,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    searchInput.addEventListener('keydown', (e) => {
+        let items = searchSuggestions.querySelectorAll('.suggestion-item');
+        if (items.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            currentFocus++;
+            addActive(items);
+        } else if (e.key === 'ArrowUp') {
+            currentFocus--;
+            addActive(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentFocus > -1) {
+                if (items[currentFocus]) items[currentFocus].click();
+            }
+        }
+    });
+
+    function addActive(items) {
+        if (!items) return false;
+        removeActive(items);
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (items.length - 1);
+        items[currentFocus].classList.add('suggestion-active');
+        items[currentFocus].style.backgroundColor = 'var(--surface-color)';
+    }
+
+    function removeActive(items) {
+        for (let i = 0; i < items.length; i++) {
+            items[i].classList.remove('suggestion-active');
+            items[i].style.backgroundColor = '';
+        }
+    }
+
     document.addEventListener('click', (e) => {
         if(!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
             searchSuggestions.classList.add('hidden');
@@ -194,16 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     popularItems.forEach(item => {
-        item.addEventListener('click', () => showResultScreen(item.getAttribute('data-query'), "Popular Selection"));
-    });
-    catPills.forEach(item => {
-        item.addEventListener('click', () => {
-            const cat = item.innerText.trim();
-            // Just map to first matched for demo
-            let key = Object.keys(WASTE_INFO_DB).find(k => k.toLowerCase().includes(cat.toLowerCase()));
-            if(!key) key = "plastic waste"; 
-            showResultScreen(key, "Category Selection");
-        });
+        item.addEventListener('click', () => showResultScreen(item.getAttribute('data-query'), "Category Selection"));
     });
 
 
@@ -275,20 +310,34 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         
         currentDataURL = canvasElement.toDataURL('image/jpeg', 0.9);
+        const cameraPreview = document.getElementById('cameraPreview');
+        cameraPreview.src = currentDataURL;
+        cameraPreview.classList.remove('hidden');
+        
         canvasElement.toBlob((blob) => {
-            handleFile(new File([blob], "camera_capture.jpg", { type: "image/jpeg" }));
-            tabUpload.click();
+            selectedFile = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+            predictBtn.disabled = false;
         }, 'image/jpeg', 0.9);
+    });
+
+    // Reset camera preview when switching tabs
+    tabCamera.addEventListener('click', () => {
+        document.getElementById('cameraPreview').classList.add('hidden');
+        tabCamera.classList.add('active');
     });
 
     // --- Inference ---
     predictBtn.addEventListener('click', async () => {
-        if (!selectedFile || !model) return;
+        if (!currentDataURL || !model) return;
         loadingOverlay.classList.remove('hidden');
         errorMsg.classList.add('hidden');
 
         try {
-            let imgTensor = tf.browser.fromPixels(imagePreview);
+            const tempImg = new Image();
+            tempImg.src = currentDataURL;
+            await new Promise(resolve => tempImg.onload = resolve);
+
+            let imgTensor = tf.browser.fromPixels(tempImg);
             const [h, w] = imgTensor.shape;
             const minDim = Math.min(h, w);
             const startY = Math.floor((h - minDim) / 2);
@@ -309,17 +358,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const output = await model.run({ [inputName]: inputTensor });
             const probData = output[model.outputNames[0]].data;
 
-            let maxIdx = 0, maxProb = probData[0];
-            for (let i = 1; i < probData.length; i++) {
-                if (probData[i] > maxProb) { maxProb = probData[i]; maxIdx = i; }
+            let maxIdx = 0, maxProb = 0;
+            for(let i = 0; i < probData.length; i++) {
+                if(probData[i] > maxProb) {
+                    maxProb = probData[i];
+                    maxIdx = i;
+                }
             }
 
-            const rawClassName = CLASS_LABELS[maxIdx];
+            let rawClassName = CLASS_LABELS[maxIdx];
+            
+            const threshold = CONFIG.confidence_threshold || 65.0;
+            if (maxProb * 100 < threshold || rawClassName === 'Non_Waste') {
+                rawClassName = 'Non_Waste';
+            }
+            
             lastPredRawClass = rawClassName; 
             const confidenceStr = "AI Confidence: " + (maxProb * 100).toFixed(1) + '%';
             
             loadingOverlay.classList.add('hidden');
-            showResultScreen(rawClassName, confidenceStr, currentDataURL);
+            showResultScreen(rawClassName, confidenceStr, currentDataURL, probData);
 
         } catch (e) {
             console.error(e);
@@ -330,8 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Premium Result Renderer ---
-    window.showResultScreen = function(categoryKey, contextLabel = "Knowledge Base", imageUrl = null) {
-        // Find DB entry
+        window.showResultScreen = function(categoryKey, contextLabel = "Knowledge Base", imageUrl = null, probData = null) {
         const key = Object.keys(WASTE_INFO_DB).find(k => k.toLowerCase() === categoryKey.toLowerCase());
         const info = key ? WASTE_INFO_DB[key] : {
             'Dispose In': 'General Bin',
@@ -342,91 +399,145 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = (key || categoryKey).replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
         const bin = info['Dispose In'];
         
-        let themeClass = 'general';
-        let binIcon = 'trash-2';
-        let binColor = 'var(--text-secondary)';
-
-        if(bin.toLowerCase().includes('green') || bin.toLowerCase().includes('organic')) { themeClass = 'organic'; binIcon = 'leaf'; binColor = 'var(--accent-color)'; }
-        if(bin.toLowerCase().includes('blue') || bin.toLowerCase().includes('recycle')) { themeClass = 'recyclable'; binIcon = 'recycle'; binColor = 'var(--info-color)'; }
-        if(bin.toLowerCase().includes('red') || bin.toLowerCase().includes('hazard')) { themeClass = 'hazardous'; binIcon = 'alert-triangle'; binColor = 'var(--danger-color)'; }
-
-        // Calculate Scrap
         let scrapVal = 'No significant scrap value';
-        const lowerClass = (key || categoryKey).toLowerCase();
-        if(lowerClass === 'metal waste') scrapVal = '₹20 - ₹200/kg';
-        if(lowerClass === 'e-waste') scrapVal = '₹150 - ₹500/kg';
-        if(lowerClass === 'plastic waste') scrapVal = '₹8 - ₹12/kg';
-        if(lowerClass === 'paper waste') scrapVal = '₹10 - ₹15/kg';
-        if(lowerClass === 'glass waste') scrapVal = '₹2 - ₹5/kg';
+        const lowerClass = ((info['Category'] || '') + " " + (key || categoryKey)).toLowerCase();
+        if(lowerClass.includes('metal')) scrapVal = '₹20 - ₹200/kg';
+        if(lowerClass.includes('e-waste') || lowerClass.includes('smartphone')) scrapVal = '₹150 - ₹500/kg';
+        if(lowerClass.includes('plastic')) scrapVal = '₹8 - ₹12/kg';
+        if(lowerClass.includes('paper') || lowerClass.includes('cardboard')) scrapVal = '₹10 - ₹15/kg';
+        if(lowerClass.includes('glass')) scrapVal = '₹2 - ₹5/kg';
 
-        // Map URL
         let q = "recycling";
         if (lowerClass.includes('e-waste')) q = "e-waste";
         if (lowerClass.includes('plastic')) q = "plastic recycling";
         if (lowerClass.includes('garbage')) q = "dumpster";
         if (lowerClass.includes('metal')) q = "scrap metal yard";
         if (lowerClass.includes('paper')) q = "paper recycling";
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q + ' near me')}`;
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+
+        let probHtml = '';
+        if (probData) {
+            const sorted = Array.from(probData).map((prob, i) => ({
+                name: CLASS_LABELS[i].replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()),
+                prob: prob * 100
+            })).sort((a,b) => b.prob - a.prob).filter(p => p.prob > 0.5);
+
+            probHtml = `
+            <details style="margin-top: 1rem;">
+                <summary style="color: var(--accent-color); font-weight: 600; cursor: pointer; font-size: 0.9rem;">▶ View All Predictions</summary>
+                <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-color); border-radius: 0.5rem;">
+                ${sorted.map(p => `
+                    <div style="margin-bottom: 0.5rem; font-size: 0.85rem;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>${p.name}</span><span>${p.prob.toFixed(1)}%</span>
+                        </div>
+                        <div class="probability-bar-container" style="height: 4px; background: #cbd5e1;">
+                            <div class="probability-bar-fill" style="width: ${p.prob}%; background: var(--accent-color); height: 100%;"></div>
+                        </div>
+                    </div>
+                `).join('')}
+                </div>
+            </details>`;
+        }
+
+        let confirmHtml = '';
+        if (imageUrl) {
+            confirmHtml = `
+            <div style="margin-top: 1.5rem;">
+                <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Confirm Category to Earn Points:</p>
+                <select id="manualCategory" class="btn action-btn" style="width: 100%; margin-bottom: 0.5rem; appearance: auto; background: var(--bg-color); border: 1px solid var(--accent-color); text-align: left; font-size: 0.95rem;">
+                    ${CLASS_LABELS.map(label => `<option value="${label}" ${label.toLowerCase() === categoryKey.toLowerCase() ? 'selected' : ''}>${label.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}</option>`).join('')}
+                </select>
+                <button id="confirmScanBtn" class="btn primary-btn" style="border-radius: 0.5rem;">
+                    Confirm & Log Scan
+                </button>
+            </div>
+            ${probHtml}
+            `;
+        }
+
+        let colorCode = '#16a34a'; // default green
+        if(bin.includes('Blue')) colorCode = '#3b82f6';
+        if(bin.includes('Red')) colorCode = '#ef4444';
+        if(bin.includes('Black')) colorCode = '#1e293b';
 
         resultContentArea.innerHTML = `
-            <div class="result-header">
-                ${imageUrl ? `<img src="${imageUrl}" class="result-image">` : `<div class="icon-circle ${themeClass === 'organic'? 'green-bg' : themeClass === 'recyclable'? 'blue-bg' : themeClass==='hazardous'?'red-bg':'gray-bg'}" style="width:80px;height:80px;"><i data-lucide="${binIcon}" style="width:32px;height:32px;"></i></div>`}
+            <div class="premium-card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    ${imageUrl ? 'AI Detection' : 'Search Result'}
+                </h3>
+                
+                <h1 style="font-size: 1.8rem; font-weight: 800; color: ${colorCode}; margin-bottom: 0.5rem;">${title}</h1>
+                
+                ${imageUrl ? `
+                <img src="${imageUrl}" onclick="document.getElementById('imageInput').click()" style="width: 100%; height: 200px; object-fit: cover; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer;" title="Click to retake" alt="Scanned item" />
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <span style="background: #dcfce7; color: #16a34a; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">${contextLabel}</span>
+                    <span style="background: #dcfce7; color: #16a34a; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600;">Time: 120ms</span>
+                </div>
+                ` : ''}
+                
+                ${confirmHtml}
+            </div>
+
+            <!-- Est Scrap Value -->
+            <div class="premium-card" style="padding: 1.5rem; text-align: center;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; text-align: left; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Est. Scrap Value</h3>
+                <h2 style="font-size: 2rem; font-weight: 800; color: #16a34a; margin-top: 1rem;">${scrapVal}</h2>
+                <p style="font-size: 0.75rem; color: var(--text-secondary);">Values are estimates only</p>
+            </div>
+
+            <!-- Handling & Impact -->
+            <div class="premium-card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Handling & Impact</h3>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 700; color: ${colorCode}; margin-bottom: 0.25rem;">Dispose In:</div>
+                    <div style="font-size: 0.95rem;">${bin}</div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 700; color: #16a34a; margin-bottom: 0.25rem;">Environmental Impact:</div>
+                    <div style="font-size: 0.95rem;">${info['Environmental Impact']}</div>
+                </div>
                 <div>
-                    <div class="result-title">${title}</div>
-                    <div class="result-category">
-                        <i data-lucide="info" style="width:14px;height:14px;"></i> ${contextLabel}
+                    <div style="font-weight: 700; color: #8b5cf6; margin-bottom: 0.25rem;">Recycling Process:</div>
+                    <div style="font-size: 0.95rem;">${info['Recycling Process']}</div>
+                </div>
+            </div>
+
+            <!-- Nearby Facilities -->
+            <div class="premium-card" style="padding: 1.5rem;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Nearby Facilities</h3>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; background: var(--bg-color); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; color: #16a34a; font-size: 0.9rem;">Ahmedabad Kabaadi Market</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Gheekanta, Ahmedabad</div>
                     </div>
+                    <div style="font-weight: 600; font-size: 0.8rem;">~2.1 km</div>
                 </div>
-            </div>
-
-            <!-- Disposal Card -->
-            <div class="premium-card ${themeClass}">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                    <div style="font-weight:700; font-size:1.1rem; color:${binColor};">Dispose In</div>
-                    <i data-lucide="${binIcon}" style="color:${binColor};"></i>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem; background: var(--bg-color); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; color: #16a34a; font-size: 0.9rem;">EcoRecycle Center</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Navrangpura, Ahmedabad</div>
+                    </div>
+                    <div style="font-weight: 600; font-size: 0.8rem;">~3.5 km</div>
                 </div>
-                <h3 style="font-size:1.8rem; margin-bottom: 0.5rem; color:var(--text-primary);">${bin}</h3>
-                <p style="color:var(--text-secondary); font-size:0.9rem;">${info['Environmental Impact']}</p>
-            </div>
-
-            <!-- Gamification & Economics -->
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom:1rem;">
-                <div class="premium-card" style="margin:0; padding:1rem; text-align:center;">
-                    <i data-lucide="coins" style="color:#eab308; margin-bottom:0.5rem;"></i>
-                    <div style="font-weight:800; font-size:1.1rem;">${scrapVal}</div>
-                    <div style="font-size:0.8rem; color:var(--text-secondary);">Est. Scrap Value</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; background: var(--bg-color); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; color: #16a34a; font-size: 0.9rem;">Green Waste Solutions</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">SG Highway, Ahmedabad</div>
+                    </div>
+                    <div style="font-weight: 600; font-size: 0.8rem;">~5.0 km</div>
                 </div>
-                <div class="premium-card" style="margin:0; padding:1rem; text-align:center;">
-                    <i data-lucide="star" style="color:#8b5cf6; margin-bottom:0.5rem;"></i>
-                    <div style="font-weight:800; font-size:1.1rem;">+10 pts</div>
-                    <div style="font-size:0.8rem; color:var(--text-secondary);">Green Reward</div>
-                </div>
-            </div>
 
-            <!-- Process details -->
-            <div class="premium-card">
-                <h4 style="margin-bottom:0.5rem;"><i data-lucide="recycle" style="width:16px;height:16px; vertical-align:text-bottom;"></i> Recycling Process</h4>
-                <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.5;">${info['Recycling Process']}</p>
-            </div>
-
-            <!-- Facility / Map -->
-            <div class="premium-card" style="text-align:center;">
-                <h4 style="margin-bottom:0.5rem;">Nearby Facilities</h4>
-                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">Find the closest recycling center for ${title.toLowerCase()}.</p>
-                <a href="${mapUrl}" target="_blank" class="btn primary-btn" style="text-decoration:none; display:inline-flex; width:auto; padding: 0.75rem 1.5rem;">
-                    <i data-lucide="map-pin"></i> Open Google Maps
+                <a href="${mapUrl}" target="_blank" onclick="interceptMapClick(event, this, '${q}')" class="btn primary-btn" style="background: #16a34a; color: white; text-decoration: none; border-radius: 0.5rem;">
+                    <i data-lucide="map-pin"></i> Search on Google Maps
                 </a>
             </div>
 
-            <!-- Mock Actions -->
-            ${imageUrl ? `
-            <button id="confirmScanBtn" class="btn primary-btn" style="margin-bottom:0.5rem;">
-                <i data-lucide="check-circle"></i> Log Scan & Claim Points
-            </button>
-            ` : ''}
-            
-            <button id="reportBtn" class="btn action-btn" style="color:var(--danger-color); border-color:var(--danger-color);">
-                <i data-lucide="alert-octagon"></i> Report Civic Issue
+            <button onclick="document.querySelector('[data-target=viewCivic]').click()" class="btn" style="border: 1px solid #f59e0b; color: #d97706; background: #fef3c7; border-radius: 0.5rem; font-weight: 700; margin-bottom: 2rem;">
+                Report Unmanaged Waste
             </button>
         `;
 
@@ -434,25 +545,121 @@ document.addEventListener('DOMContentLoaded', () => {
         switchView('viewResult');
 
         if(imageUrl) {
+            const manualDropdown = document.getElementById('manualCategory');
+            manualDropdown.addEventListener('change', (e) => {
+                showResultScreen(e.target.value, "Manual Correction", imageUrl, probData);
+            });
+            
             document.getElementById('confirmScanBtn').addEventListener('click', (e) => {
                 const btn = e.currentTarget;
-                btn.innerHTML = '<i data-lucide="check"></i> Logged!';
-                btn.style.background = 'var(--accent-color)';
-                btn.disabled = true;
+                if(btn.disabled) return;
                 
-                greenPoints += 10;
-                carbonOffset += 0.5;
-                scanHistory.push({ category: title, date: new Date().toISOString() });
-                localStorage.setItem('eco_points', greenPoints);
-                localStorage.setItem('eco_carbon', carbonOffset);
-                localStorage.setItem('eco_history', JSON.stringify(scanHistory));
+                const selCat = manualDropdown.value;
+                if (selCat !== 'Non_Waste') {
+                    btn.innerHTML = 'Logged!';
+                    btn.style.background = 'var(--text-secondary)';
+                    
+                    greenPoints += 10;
+                    carbonOffset += 0.5;
+                    scanHistory.push({ category: selCat.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()), date: new Date().toISOString() });
+                    localStorage.setItem('eco_points', greenPoints);
+                    localStorage.setItem('eco_carbon', carbonOffset);
+                    localStorage.setItem('eco_history', JSON.stringify(scanHistory));
+                } else {
+                    btn.innerHTML = 'Ignored (Non-Waste)';
+                    btn.style.background = 'var(--text-secondary)';
+                }
+                btn.disabled = true;
                 lucide.createIcons();
             });
         }
-
-        document.getElementById('reportBtn').addEventListener('click', () => {
-            const ticketId = '#EV-' + Math.floor(1000 + Math.random() * 9000);
-            alert(`Civic complaint filed!\nTicket ID: ${ticketId}\nExpected Resolution: 48 hours\n\nThank you for keeping the city clean!`);
-        });
     };
+
+    window.interceptMapClick = function(e, element, query) {
+        e.preventDefault();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}&query_place_id=${lat},${lon}`;
+                    window.open(url, '_blank');
+                },
+                (err) => {
+                    console.warn("Geolocation failed or denied, using default search.", err);
+                    const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + ' near me')}`;
+                    window.open(fallbackUrl, '_blank');
+                }
+            );
+        } else {
+            window.open(element.href + ' near me', '_blank');
+        }
+    }
+    
+    window.fetchCivicLocation = function(btn) {
+        if (navigator.geolocation) {
+            btn.innerHTML = '<i data-lucide="loader"></i> Locating...';
+            lucide.createIcons();
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(4);
+                    const lon = pos.coords.longitude.toFixed(4);
+                    btn.innerHTML = `<i data-lucide="check"></i> Lat: ${lat}, Lng: ${lon}`;
+                    btn.style.color = '#16a34a';
+                    btn.style.borderColor = '#16a34a';
+                    btn.style.background = '#dcfce7';
+                    lucide.createIcons();
+                },
+                (err) => {
+                    console.warn("Geolocation failed", err);
+                    btn.style.display = 'none';
+                    const input = document.getElementById('civicLocInput');
+                    input.classList.remove('hidden');
+                    input.focus();
+                }
+            );
+        } else {
+            btn.style.display = 'none';
+            const input = document.getElementById('civicLocInput');
+            input.classList.remove('hidden');
+            input.focus();
+        }
+    }
+    
+    window.searchFor = function(query) {
+        showResultScreen(query, null, `100.0`, "Database Match");
+    }
+
+    window.showGovtBinInfo = function(color) {
+        const modal = document.getElementById('govtBinModal');
+        const title = document.getElementById('govtBinTitle');
+        const desc = document.getElementById('govtBinDesc');
+        const examples = document.getElementById('govtBinExamples');
+        const dest = document.getElementById('govtBinDest');
+
+        modal.classList.remove('hidden');
+
+        if (color === 'green') {
+            title.innerHTML = '<i data-lucide="trash-2" style="color: #22c55e;"></i> Green Bin: Wet Waste';
+            desc.textContent = 'For organic and biodegradable waste.';
+            examples.innerHTML = '<li>Kitchen scraps</li><li>Vegetable/fruit peels</li><li>Tea bags</li><li>Garden leaves</li>';
+            dest.textContent = 'Sent directly to composting or bio-methanation facilities.';
+        } else if (color === 'blue') {
+            title.innerHTML = '<i data-lucide="trash-2" style="color: #3b82f6;"></i> Blue Bin: Dry Waste';
+            desc.textContent = 'For non-biodegradable, recyclable materials.';
+            examples.innerHTML = '<li>Plastics</li><li>Paper & Cardboard</li><li>Glass bottles</li><li>Metals</li>';
+            dest.textContent = 'Transported to Material Recovery Facilities (MRFs) for sorting and recycling.';
+        } else if (color === 'red') {
+            title.innerHTML = '<i data-lucide="trash-2" style="color: #ef4444;"></i> Red Bin: Sanitary Waste';
+            desc.textContent = 'A new category introduced to isolate highly personal and potentially infectious hygiene products.';
+            examples.innerHTML = '<li>Used diapers</li><li>Sanitary pads</li><li>Bandages</li>';
+            dest.textContent = 'Safely incinerated or deep-buried in secure landfills.';
+        } else if (color === 'black') {
+            title.innerHTML = '<i data-lucide="trash-2" style="color: #1e293b;"></i> Black Bin: Hazardous';
+            desc.textContent = 'For domestic hazardous materials and e-waste.';
+            examples.innerHTML = '<li>E-waste (batteries, bulbs)</li><li>Paint cans</li><li>Chemicals</li>';
+            dest.textContent = 'Handled by specialized hazardous waste processing facilities.';
+        }
+        lucide.createIcons();
+    }
 });

@@ -15,7 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'EcoVision',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       home: const SplashScreen(),
     );
   }

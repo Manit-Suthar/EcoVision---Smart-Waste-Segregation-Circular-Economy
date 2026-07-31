@@ -370,7 +370,7 @@ body {
 
 .camera-area, .upload-area {
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 4 / 3;
     background: #e2e8f0;
     border-radius: 1rem;
     overflow: hidden;
@@ -523,22 +523,6 @@ body {
 .nav-item.active { color: var(--accent-color); }
 .nav-item svg { width: 24px; height: 24px; }
 
-.scan-nav-btn {
-    background: var(--accent-color);
-    color: #fff;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: -16px;
-    box-shadow: 0 4px 12px rgba(22,163,74,0.3);
-}
-.nav-item.active .scan-nav-btn {
-    transform: scale(1.05);
-}
-
 .loading-overlay {
     text-align: center;
     padding: 2rem;
@@ -558,3 +542,74 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Background Blobs for vibrant look */
+.background-blobs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+    background-color: #f0fdf4; /* Light green tint */
+}
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    animation: float 20s infinite ease-in-out alternate;
+}
+.blob-1 {
+    width: 400px;
+    height: 400px;
+    background: #dcfce7;
+    top: -100px;
+    left: -100px;
+}
+.blob-2 {
+    width: 300px;
+    height: 300px;
+    background: #dbeafe;
+    bottom: 20%;
+    right: -50px;
+    animation-delay: -5s;
+}
+.blob-3 {
+    width: 350px;
+    height: 350px;
+    background: #fef9c3;
+    bottom: -100px;
+    left: 20%;
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(50px, 30px) scale(1.1); }
+    100% { transform: translate(-30px, -50px) scale(0.9); }
+}
+
+/* Glassmorphism overrides */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Result Screen Enhancements */
+.probability-bar-container {
+    width: 100%;
+    background: #e2e8f0;
+    border-radius: 8px;
+    height: 8px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.probability-bar-fill {
+    height: 100%;
+    background: var(--accent-color);
+    border-radius: 8px;
+}
+.suggestion-item svg { flex-shrink: 0; }
