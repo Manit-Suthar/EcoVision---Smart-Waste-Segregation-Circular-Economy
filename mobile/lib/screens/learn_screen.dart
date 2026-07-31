@@ -27,26 +27,26 @@ class LearnScreen extends StatelessWidget {
           const SizedBox(height: 16),
           ...categories.map((category) {
             final info = KnowledgeEngine.getWasteInfo(category);
-            final wasteCat = (info['Category'] ?? '').toLowerCase();
+            final catLower = category.toLowerCase();
             
             Color iconColor = Theme.of(context).colorScheme.primary;
             IconData iconData = Icons.eco;
             
-            if (wasteCat.contains('plastic')) {
+            if (catLower.contains('plastic')) {
               iconColor = Colors.lightBlue; iconData = Icons.water_drop_outlined;
-            } else if (wasteCat.contains('paper')) {
+            } else if (catLower.contains('paper')) {
               iconColor = Colors.orange; iconData = Icons.feed_outlined;
-            } else if (wasteCat.contains('glass')) {
+            } else if (catLower.contains('glass')) {
               iconColor = Colors.teal; iconData = Icons.wine_bar_outlined;
-            } else if (wasteCat.contains('metal')) {
+            } else if (catLower.contains('metal') || catLower.contains('automobile')) {
               iconColor = Colors.blueGrey; iconData = Icons.propane_tank_outlined;
-            } else if (wasteCat.contains('organic') || wasteCat.contains('food')) {
+            } else if (catLower.contains('organic') || catLower.contains('food')) {
               iconColor = Colors.green; iconData = Icons.eco_outlined;
-            } else if (wasteCat.contains('e-waste')) {
+            } else if (catLower.contains('e-waste') || catLower.contains('bulb')) {
               iconColor = Colors.deepOrange; iconData = Icons.memory_outlined;
-            } else if (wasteCat.contains('battery')) {
+            } else if (catLower.contains('battery')) {
               iconColor = Colors.red; iconData = Icons.battery_alert_outlined;
-            } else if (wasteCat.contains('sanitary')) {
+            } else if (catLower.contains('sanitary')) {
               iconColor = Colors.redAccent; iconData = Icons.medical_services_outlined;
             }
             
