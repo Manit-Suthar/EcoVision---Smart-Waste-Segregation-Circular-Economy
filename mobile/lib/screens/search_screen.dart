@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../ai/knowledge_engine.dart';
 import 'result_screen.dart';
 import '../theme/app_theme.dart';
+import '../widgets/brand_app_bar.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -36,21 +37,21 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  void _navigateToResult(String categoryKey) {
+  void _navigateToResult(String predictedClass) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ResultScreen(
-          categoryKey: categoryKey,
+          predictedClass: predictedClass,
           isSearch: true,
         ),
       ),
     );
   }
 
-  Widget _buildPopularItem(String title, String iconPath, Color bgColor, Color iconColor) {
+  Widget _buildPopularItem(String title, String key, String iconPath, Color bgColor, Color iconColor) {
     return GestureDetector(
-      onTap: () => _navigateToResult(title),
+      onTap: () => _navigateToResult(key),
       child: Column(
         children: [
           Container(
@@ -77,15 +78,15 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildCategoryPill(String title, IconData icon) {
+  Widget _buildCategoryPill(String title, String key, IconData icon) {
     return GestureDetector(
-      onTap: () => _navigateToResult(title), // We let knowledge engine handle it or fallback
+      onTap: () => _navigateToResult(key), // We let knowledge engine handle it or fallback
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: Colors.black12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -106,8 +107,8 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search & Explore'),
+      
+      appBar: BrandAppBar(
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(80),
           child: Padding(
@@ -135,11 +136,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 runSpacing: 16,
                 alignment: WrapAlignment.start,
                 children: [
-                  _buildPopularItem('Battery Waste', 'assets/shared/icons/battery.svg', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
-                  _buildPopularItem('Plastic Waste', 'assets/shared/icons/bottle.svg', const Color(0xFFDBEAFE), const Color(0xFF2563EB)),
-                  _buildPopularItem('Paper Waste', 'assets/shared/icons/cardboard.svg', const Color(0xFFFEF9C3), const Color(0xFFCA8A04)),
-                  _buildPopularItem('Metal Waste', 'assets/shared/icons/can.svg', const Color(0xFFF1F5F9), const Color(0xFF475569)),
-                  _buildPopularItem('Organic Waste', 'assets/shared/icons/banana.svg', const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
+                  _buildPopularItem('Battery Waste', 'battery', 'assets/shared/icons/battery.svg', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+                  _buildPopularItem('Plastic Waste', 'plastic', 'assets/shared/icons/bottle.svg', const Color(0xFFDBEAFE), const Color(0xFF2563EB)),
+                  _buildPopularItem('Paper Waste', 'paper', 'assets/shared/icons/cardboard.svg', const Color(0xFFFEF9C3), const Color(0xFFCA8A04)),
+                  _buildPopularItem('Metal Waste', 'metal', 'assets/shared/icons/can.svg', const Color(0xFFF1F5F9), const Color(0xFF475569)),
+                  _buildPopularItem('Organic Waste', 'organic', 'assets/shared/icons/banana.svg', const Color(0xFFDCFCE7), const Color(0xFF16A34A)),
                 ],
               ),
               const SizedBox(height: 32),
@@ -149,13 +150,13 @@ class _SearchScreenState extends State<SearchScreen> {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  _buildCategoryPill('Plastic Waste', Icons.water_drop_outlined),
-                  _buildCategoryPill('Paper Waste', Icons.feed_outlined),
-                  _buildCategoryPill('Glass Waste', Icons.wine_bar_outlined),
-                  _buildCategoryPill('Metal Waste', Icons.propane_tank_outlined),
-                  _buildCategoryPill('Organic Waste', Icons.eco_outlined),
-                  _buildCategoryPill('E-waste', Icons.memory_outlined),
-                  _buildCategoryPill('Battery Waste', Icons.battery_alert_outlined),
+                  _buildCategoryPill('Plastic Waste', 'plastic', Icons.water_drop_outlined),
+                  _buildCategoryPill('Paper Waste', 'paper', Icons.feed_outlined),
+                  _buildCategoryPill('Glass Waste', 'glass', Icons.wine_bar_outlined),
+                  _buildCategoryPill('Metal Waste', 'metal', Icons.propane_tank_outlined),
+                  _buildCategoryPill('Organic Waste', 'organic', Icons.eco_outlined),
+                  _buildCategoryPill('E-waste', 'e-waste', Icons.memory_outlined),
+                  _buildCategoryPill('Battery Waste', 'battery', Icons.battery_alert_outlined),
                 ],
               ),
             ],

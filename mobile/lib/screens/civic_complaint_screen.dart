@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 import '../theme/app_theme.dart';
+import '../widgets/brand_app_bar.dart';
 
 class CivicComplaintScreen extends StatefulWidget {
   final String category;
@@ -19,18 +21,61 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
   bool _isSubmitting = false;
   bool _submitted = false;
   String _ticketId = '';
+  String? _selectedCategory;
+
+  final List<String> _reportCategories = [
+    'Garbage Dump Overflow',
+    'Dead Animal',
+    'Street Sweeping Required',
+    'Hazardous Waste Spilled',
+    'Other'
+  ];
 
   @override
   void initState() {
     super.initState();
-    _locationController.text = "Fetching current location...";
-    Future.delayed(const Duration(seconds: 1), () {
+    _selectedCategory = widget.category.isNotEmpty && widget.category != 'Non_Waste' ? widget.category : _reportCategories[0];
+    _fetchLocation();
+  }
+
+  Future<void> _fetchLocation() async {
+    setState(() {
+      _locationController.text = "Fetching current location...";
+    });
+    
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) setState(() => _locationController.text = "Location services disabled");
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) setState(() => _locationController.text = "Location permission denied");
+        return;
+      }
+    }
+    
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) setState(() => _locationController.text = "Location permanently denied");
+      return;
+    } 
+
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       if (mounted) {
         setState(() {
-          _locationController.text = "Lat: 28.6139, Lng: 77.2090 (Simulated)";
+          _locationController.text = "Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}";
         });
       }
-    });
+    } catch (e) {
+      if (mounted) setState(() => _locationController.text = "Failed to get location");
+    }
   }
 
   @override
@@ -62,9 +107,8 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Report Civic Issue'),
-      ),
+      
+      appBar: const BrandAppBar(),
       body: _submitted ? _buildSuccessView() : _buildFormView(),
     );
   }
@@ -98,13 +142,21 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            TextFormField(
-              initialValue: widget.category,
-              readOnly: true,
+            DropdownButtonFormField<String>(
+              value: _reportCategories.contains(_selectedCategory) ? _selectedCategory : _reportCategories[0],
               decoration: const InputDecoration(
-                labelText: 'Waste Category',
+                labelText: 'Issue Type',
                 prefixIcon: Icon(Icons.category_outlined),
               ),
+              items: _reportCategories.map((cat) {
+                return DropdownMenuItem(
+                  value: cat,
+                  child: Text(cat),
+                );
+              }).toList(),
+              onChanged: (val) {
+                setState(() => _selectedCategory = val);
+              },
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -188,9 +240,16 @@ class _CivicComplaintScreenState extends State<CivicComplaintScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    setState(() {
+                      _submitted = false;
+                      _descController.clear();
+                    });
+                  }
                 },
-                child: const Text('Back to Results'),
+                child: const Text('Back / Done'),
               ),
             ),
           ],

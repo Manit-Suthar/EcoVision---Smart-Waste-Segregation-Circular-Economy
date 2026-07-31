@@ -3,7 +3,8 @@ import 'home_screen.dart';
 import 'camera_screen.dart';
 import 'search_screen.dart';
 import 'learn_screen.dart';
-
+import 'civic_complaint_screen.dart';
+import '../widgets/premium_background.dart';
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
@@ -38,6 +39,8 @@ class _MainLayoutState extends State<MainLayout> {
         return const SearchScreen();
       case 3:
         return const LearnScreen();
+      case 4:
+        return const CivicComplaintScreen(category: 'Unknown');
       default:
         return HomeScreen(key: _homeKey);
     }
@@ -46,7 +49,7 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildBody(),
+      body: PremiumBackground(child: _buildBody()),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: _onTabTapped,
@@ -70,6 +73,11 @@ class _MainLayoutState extends State<MainLayout> {
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
             label: 'Learn',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.report_problem_outlined),
+            selectedIcon: Icon(Icons.report_problem),
+            label: 'Report',
           ),
         ],
       ),

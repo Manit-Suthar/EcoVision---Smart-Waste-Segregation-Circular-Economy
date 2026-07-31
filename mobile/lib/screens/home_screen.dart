@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../ai/knowledge_engine.dart';
 import '../services/gamification_service.dart';
 import '../theme/app_theme.dart';
 import 'dart:math';
+import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,11 +27,22 @@ class HomeScreenState extends State<HomeScreen> {
     "Rinse your plastics! Food residue can ruin an entire batch of recyclables."
   ];
   late String _dailyTip;
+  late String _greetingMsg;
 
   @override
   void initState() {
     super.initState();
     _dailyTip = _ecoTips[Random().nextInt(_ecoTips.length)];
+    
+    final hour = DateTime.now().hour;
+    if (hour >= 12 && hour < 17) {
+      _greetingMsg = 'Good Afternoon';
+    } else if (hour >= 17) {
+      _greetingMsg = 'Good Evening';
+    } else {
+      _greetingMsg = 'Good Morning';
+    }
+    
     loadDashboardData();
   }
 
@@ -53,9 +66,15 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scrapValue = _history.length * 5; // mockup value
+    int totalScrapValue = 0;
+    for (var item in _history) {
+      String cat = item['category'] ?? '';
+      String cls = item['class_name'] ?? '';
+      totalScrapValue += KnowledgeEngine.getScrapValue('$cat $cls');
+    }
 
     return Scaffold(
+      
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadDashboardData,
@@ -66,14 +85,32 @@ class HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 10),
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.eco, color: AppTheme.primaryColor, size: 28),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'EcoVision',
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 26,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Text(
-                  'Good Morning 🌿',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
+                  '$_greetingMsg 🌿',
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Welcome back to EcoVision!',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 
@@ -88,7 +125,7 @@ class HomeScreenState extends State<HomeScreen> {
                   children: [
                     _buildStatCard('Total Scans', '${_history.length}', Icons.document_scanner_outlined, AppTheme.textSecondary),
                     _buildStatCard('Carbon Saved', '${_carbonOffset.toStringAsFixed(1)}kg', Icons.eco, AppTheme.primaryColor),
-                    _buildStatCard('Scrap Value', '₹$scrapValue', Icons.monetization_on, AppTheme.warningColor),
+                    _buildStatCard('Scrap Value', '₹$totalScrapValue', Icons.monetization_on, AppTheme.warningColor),
                     _buildStatCard('Green Score', '$_greenPoints', Icons.star, const Color(0xFF8B5CF6)),
                   ],
                 ),
@@ -205,46 +242,57 @@ class HomeScreenState extends State<HomeScreen> {
       itemCount: min(_history.length, 5), // show last 5 max
       itemBuilder: (context, index) {
         final item = _history[_history.length - 1 - index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  shape: BoxShape.circle,
+        return GestureDetector(
+          onTap: () {
+            final category = item['class_name'] ?? item['category'] ?? 'Unknown';
+            if (category != 'Unknown') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ResultScreen(predictedClass: category)),
+              );
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.history, color: AppTheme.textSecondary, size: 20),
                 ),
-                child: const Icon(Icons.history, color: AppTheme.textSecondary, size: 20),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item['class_name'] ?? item['category'] ?? 'Unknown',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item['date'] != null ? DateTime.parse(item['date']).toLocal().toString().split('.')[0] : 'Just now',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                    ),
-                  ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['class_name'] ?? item['category'] ?? 'Unknown',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item['date'] != null ? DateTime.parse(item['date']).toLocal().toString().split('.')[0] : 'Just now',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Text(
-                '+10 pts',
-                style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
-              ),
-            ],
+                const Text(
+                  '+10 pts',
+                  style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
         );
       },
