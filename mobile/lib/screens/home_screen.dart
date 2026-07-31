@@ -96,7 +96,7 @@ class HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w900,
-                          fontSize: 26,
+                          fontSize: 36,
                         ),
                       ),
                     ],
@@ -105,7 +105,7 @@ class HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 24),
                 Text(
                   '$_greetingMsg 🌿',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 24),
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 4),
                 Text(
