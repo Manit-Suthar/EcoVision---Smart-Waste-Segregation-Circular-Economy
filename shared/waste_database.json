@@ -1,110 +1,892 @@
 {
-  "E-waste": { 
-    "Category": "E-Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "E-Waste Drop-off", 
-    "Preparation Steps": "Remove all batteries and delete personal data before recycling.",
-    "Disposal Warnings": "Never throw in regular trash. Contains toxic heavy metals like lead and mercury.",
-    "Environmental Impact": "Proper recycling prevents soil and water contamination while recovering valuable metals.",
-    "Recycling Process": "Devices are shredded, and metals/plastics are separated using magnets and water currents.",
-    "Interesting Facts": "Only about 20% of global e-waste is formally recycled.",
-    "Common Mistakes": "Throwing small electronics like earbuds in the regular bin.",
-    "google_query": "e-waste+collection+facility+near+me" 
-  },
-  "automobile wastes": { 
-    "Category": "Automotive Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Hazardous Waste Facility", 
-    "Preparation Steps": "Drain all fluids (oil, coolant) into sealed, leak-proof containers.",
-    "Disposal Warnings": "Highly flammable and toxic. Keep away from heat sources.",
-    "Environmental Impact": "One gallon of motor oil can contaminate one million gallons of water.",
-    "Recycling Process": "Oil is re-refined, tires are shredded for playground surfaces, and scrap metal is melted.",
-    "Interesting Facts": "Used motor oil never wears out, it just gets dirty and can be recycled infinitely.",
-    "Common Mistakes": "Pouring used oil down storm drains.",
-    "google_query": "automotive+waste+disposal+facility+near+me" 
-  },
-  "battery waste": { 
-    "Category": "Hazardous Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Battery Drop-off", 
-    "Preparation Steps": "Tape the terminals of lithium/button batteries with clear tape to prevent short circuits.",
-    "Disposal Warnings": "Lithium batteries can catch fire if crushed in garbage trucks. Do not puncture.",
-    "Environmental Impact": "Prevents toxic chemicals (lithium, cadmium, lead) from leaching into groundwater.",
-    "Recycling Process": "Batteries are sorted by chemistry, crushed, and metals are extracted via smelting.",
-    "Interesting Facts": "Lead-acid car batteries are the most recycled consumer product in the world.",
-    "Common Mistakes": "Tossing rechargeable batteries into the household recycling bin.",
-    "google_query": "battery+recycling+drop-off+near+me" 
-  },
-  "glass waste": { 
-    "Category": "Dry Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Green/Glass Bin", 
-    "Preparation Steps": "Rinse lightly to remove food residue. Lids can usually remain on.",
-    "Disposal Warnings": "Broken glass should be wrapped in thick paper and labeled before disposal.",
-    "Environmental Impact": "Recycling glass reduces energy costs by 20-30% compared to making new glass.",
-    "Recycling Process": "Glass is crushed into cullet, sorted by color, melted, and molded into new products.",
-    "Interesting Facts": "Glass is 100% recyclable and can be recycled endlessly without loss of quality.",
-    "Common Mistakes": "Mixing Pyrex, mirrors, or window glass with bottle glass (they have different melting points).",
-    "google_query": "glass+recycling+center+near+me" 
-  },
-  "light bulbs": { 
-    "Category": "Hazardous Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Special Drop-off", 
-    "Preparation Steps": "Wrap securely to prevent breakage during transport.",
-    "Disposal Warnings": "CFLs and fluorescent tubes contain toxic mercury vapor. Clean up immediately if broken.",
-    "Environmental Impact": "Recycling prevents mercury release and recovers glass and aluminum.",
-    "Recycling Process": "Machines crush the bulbs, capturing mercury vapor in filters while separating glass and metal.",
-    "Interesting Facts": "Almost all components of a fluorescent bulb can be recycled.",
-    "Common Mistakes": "Throwing LED or CFL bulbs into standard glass recycling bins.",
-    "google_query": "light+bulb+recycling+near+me" 
-  },
-  "metal waste": { 
-    "Category": "Dry Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Blue Bin", 
-    "Preparation Steps": "Rinse food cans and crush aluminum cans to save space.",
-    "Disposal Warnings": "Ensure aerosols are completely empty before recycling to prevent explosions.",
-    "Environmental Impact": "Recycling aluminum saves 95% of the energy needed to make new aluminum from bauxite ore.",
-    "Recycling Process": "Metals are shredded, melted in a furnace, cast into ingots, and rolled into new sheets.",
-    "Interesting Facts": "A recycled aluminum can is back on the grocery shelf in as little as 60 days.",
-    "Common Mistakes": "Leaving food heavily caked on the inside of tin cans.",
-    "google_query": "scrap+metal+recycling+near+me" 
-  },
-  "organic waste": { 
-    "Category": "Wet Waste", 
-    "Recyclable": "No (Compostable)", 
-    "Dispose In": "Green/Compost Bin", 
+  "organic waste": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
     "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
-    "Disposal Warnings": "Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
     "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
-    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost.",
-    "Interesting Facts": "Food waste makes up about 30% of what we throw away globally.",
-    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities).",
-    "google_query": "compost+facility+near+me" 
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
   },
-  "paper waste": { 
-    "Category": "Dry Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Blue Bin", 
-    "Preparation Steps": "Keep dry and flatten cardboard boxes.",
-    "Disposal Warnings": "Do not recycle paper contaminated with food, grease, or bodily fluids.",
-    "Environmental Impact": "Recycling 1 ton of paper saves 17 trees and 7,000 gallons of water.",
-    "Recycling Process": "Paper is pulped in water, de-inked, screened for contaminants, and rolled into new sheets.",
-    "Interesting Facts": "Paper can be recycled 5 to 7 times before the fibers become too short.",
-    "Common Mistakes": "Trying to recycle greasy pizza boxes or wax-coated paper cups.",
-    "google_query": "paper+recycling+center+near+me" 
+  "plastic waste": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
   },
-  "plastic waste": { 
-    "Category": "Dry Waste", 
-    "Recyclable": "Yes", 
-    "Dispose In": "Blue Bin", 
-    "Preparation Steps": "Rinse out food/liquid and check the resin identification code (triangle number).",
-    "Disposal Warnings": "Soft plastics (like grocery bags) jam sorting machines and usually require special drop-offs.",
-    "Environmental Impact": "Recycling plastic keeps it out of oceans and reduces petroleum consumption.",
-    "Recycling Process": "Plastics are sorted by type, washed, shredded into flakes, melted, and extruded into pellets.",
-    "Interesting Facts": "Recycled plastic bottles can be turned into fleece jackets or sleeping bag insulation.",
-    "Common Mistakes": "Wish-cycling: throwing unrecyclable plastics (like styrofoam) into the bin hoping they get recycled.",
-    "google_query": "plastic+recycling+center+near+me" 
+  "paper waste": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "glass waste": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "metal waste": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "E-waste": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "battery waste": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "light bulbs": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "automobile wastes": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "Non_Waste": {
+    "Category": "Unrecognized / Not Waste",
+    "Dispose In": "N/A",
+    "Recyclable": "N/A",
+    "Preparation Steps": "Please upload a clear image of the waste item, properly centered and well-lit.",
+    "Disposal Warnings": "We could not confidently classify this object as a recognized waste type.",
+    "Environmental Impact": "N/A",
+    "Recycling Process": "N/A",
+    "Common Mistakes": "Scanning from too far away, low lighting, or scanning non-waste objects."
+  },
+  "sanitary waste": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "diaper": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "sanitary pad": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "tampon": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "condom": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "soiled tissue": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "medical mask": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "syringe": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "band-aid": {
+    "Category": "Sanitary Waste",
+    "Dispose In": "Red Bin",
+    "Recyclable": "No",
+    "Preparation Steps": "Securely wrap this waste in a paper pouch before disposal.",
+    "Disposal Warnings": "Highly personal and potentially infectious. Never flush down the toilet.",
+    "Environmental Impact": "Improper disposal contaminates water sources and poses severe health risks to sanitation workers.",
+    "Recycling Process": "Typically incinerated at high temperatures in specialized biomedical waste facilities.",
+    "Common Mistakes": "Throwing unwrapped sanitary products in the regular green or blue bins."
+  },
+  "banana peel": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "apple core": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "food scrap": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "vegetable peel": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "coffee grounds": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "tea bag": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "eggshell": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "leaf": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "grass clipping": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "leftovers": {
+    "Category": "Wet Waste",
+    "Dispose In": "Green Bin",
+    "Recyclable": "No (Compostable)",
+    "Preparation Steps": "Remove all plastic stickers, rubber bands, or non-biodegradable packaging.",
+    "Disposal Warnings": "Do not mix with dry waste. Avoid adding large amounts of meat or dairy to backyard compost to prevent pests.",
+    "Environmental Impact": "Composting prevents methane emissions from landfills and creates nutrient-rich soil.",
+    "Recycling Process": "Microorganisms break down the organic matter in an aerobic environment to create compost or bio-methanation.",
+    "Common Mistakes": "Composting 'biodegradable' plastics in home setups (they often require industrial facilities)."
+  },
+  "plastic bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "water bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "pet bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "plastic bag": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "food wrapper": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "plastic container": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "yogurt cup": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "plastic cutlery": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "cardboard box": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "newspaper": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "magazine": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "office paper": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "mail": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "flyer": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "paper bag": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "envelope": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "notebook": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "glass bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "wine bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "beer bottle": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "glass jar": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "broken glass": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "window glass": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "aluminum can": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "tin can": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "coke can": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "soda can": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "metal pipe": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "steel scrap": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "copper wire": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "iron scrap": {
+    "Category": "Dry Waste",
+    "Dispose In": "Blue Bin",
+    "Recyclable": "Yes",
+    "Preparation Steps": "Rinse out food/liquid, dry completely, and flatten to save space.",
+    "Disposal Warnings": "Do not recycle materials heavily contaminated with food, grease, or bodily fluids.",
+    "Environmental Impact": "Recycling reduces energy consumption, keeps materials out of oceans, and saves virgin resources.",
+    "Recycling Process": "Materials are transported to Material Recovery Facilities (MRFs) for sorting, then shredded, melted, or pulped into new materials.",
+    "Common Mistakes": "Wish-cycling: throwing unrecyclable soft plastics or mixed materials into the bin hoping they get recycled."
+  },
+  "smartphone": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "laptop": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "keyboard": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "mouse": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "charger": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "cable": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "tablet": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "monitor": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "earbuds": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "headphones": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "printer": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "aa battery": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "aaa battery": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "lithium battery": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "button cell": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "rechargeable battery": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "cfl bulb": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "led bulb": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "fluorescent tube": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "incandescent bulb": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "halogen bulb": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "car battery": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "motor oil": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "tire": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "brake pad": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "spark plug": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "car part": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "paint can": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
+  },
+  "expired medicine": {
+    "Category": "Special Care / Hazardous",
+    "Dispose In": "Black Bin",
+    "Recyclable": "Special Facilities Only",
+    "Preparation Steps": "Keep separated from all other waste. Tape battery terminals if possible.",
+    "Disposal Warnings": "Contains toxic chemicals, heavy metals, or flammable components. Do not puncture or crush.",
+    "Environmental Impact": "Improper disposal leaches highly toxic substances (like lead, mercury, lithium) into soil and groundwater.",
+    "Recycling Process": "Handled by specialized facilities where toxic components are neutralized or safely extracted, and rare metals are recovered.",
+    "Common Mistakes": "Throwing batteries, bulbs, or electronics in regular trash bins leading to toxic contamination."
   }
 }

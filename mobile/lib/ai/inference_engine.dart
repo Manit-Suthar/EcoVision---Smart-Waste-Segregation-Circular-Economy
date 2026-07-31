@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'dart:typed_data';
 import 'package:onnxruntime/onnxruntime.dart';
+import 'dart:math' as math;
 
 class InferenceEngine {
   static OrtSession? session;
